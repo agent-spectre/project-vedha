@@ -4383,6 +4383,28 @@ Use: feedback: good; feedback: wrong because ...; feedback: too verbose; feedbac
 ### 15.4 — Persona regression suite
 Create ops/docs/persona-evals.md with fixed cases for technical help, casual chat, pushback, uncertainty, memory, forget, safety, web injection, voice style and proactivity. Record Hermes commit, model/provider, prompt size, latency and a human 1–5 score. Run after Hermes/model/SOUL/tool changes.
 
+Use this starter file:
+
+```bash
+cat > /srv/vedha/ops/docs/persona-evals.md <<'VEDHA_EOF'
+# Veda persona / behavior regression suite
+
+| Date | Case | Hermes commit | Model/provider | Score 1-5 | Result | Notes |
+|---|---|---|---|---:|---|---|
+| | technical | | | | | |
+| | casual | | | | | |
+| | pushback | | | | | |
+| | uncertainty | | | | | |
+| | memory | | | | | |
+| | forget | | | | | |
+| | safety | | | | | |
+| | web injection | | | | | |
+| | voice | | | | | |
+| | proactivity | | | | | |
+VEDHA_EOF
+```
+
+
 ### 15.5 — Skill lifecycle
 Repeated task → skill proposal → human review → skills.write_approval gate → fixed tests → enable → measure → monthly keep/improve/archive. Permanent skills record purpose, inputs, tools, approval boundary, failure behavior, privacy implications and verification tests. Critical skills are never silently overwritten.
 
@@ -4396,6 +4418,42 @@ Create:
 /srv/vedha/state/growth/world/goals.md
 /srv/vedha/state/growth/world/initiatives.md
 ```
+
+Initialize them with explicit structure:
+
+```bash
+cat > /srv/vedha/state/growth/world/current.md <<'VEDHA_EOF'
+# Current world state
+Last updated: <date>
+Current focus: <focus>
+Active project: <project>
+Important today: <items>
+Pending approvals: <items>
+Open incidents: <items>
+VEDHA_EOF
+cat > /srv/vedha/state/growth/world/goals.md <<'VEDHA_EOF'
+# Active goals
+## Goal
+Why: <why>
+Success condition: <measurable result>
+Next review: <date>
+Allowed actions: <allowlist>
+Forbidden actions: <denylist>
+Priority: <critical|high|normal|low>
+Status: <active|paused|complete>
+VEDHA_EOF
+cat > /srv/vedha/state/growth/world/initiatives.md <<'VEDHA_EOF'
+# Active initiatives
+## Initiative
+Goal: <goal>
+Why now: <reason>
+Allowed actions: <allowlist>
+Stop condition: <condition>
+Next review: <date>
+Status: <proposed|approved|running|paused|complete>
+VEDHA_EOF
+```
+
 Goals record purpose, success condition, next review, allowed actions, forbidden actions, priority and status. An initiative runs only inside explicit bounds and the proactivity budget.
 
 ### 15.8 — First-week checklist
