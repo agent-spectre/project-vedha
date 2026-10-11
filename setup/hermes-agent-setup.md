@@ -2052,10 +2052,15 @@ VEDHA_USER_MD_LIMIT=<value-from-4.1> vedha-persona-apply --seed-user     # repla
 **4.4 — Memory policy fragment**
 ```bash
 cat > /srv/vedha/ops/config/fragments/40-memory.yaml <<'VEDHA_EOF'
-# Stage 4 — built-in memory on; writes require approval while trust is established. [VERIFY] key names
+# Stage 4 — built-in memory + governed native learning.
+# v0.21.6 limits: USER.md 1375 chars; MEMORY.md 2200 chars [VERIFY against pinned checkout].
 memory:
   memory_enabled: true
   user_profile_enabled: true
+  memory_char_limit: 2200
+  user_char_limit: 1375
+  write_approval: true
+skills:
   write_approval: true
 VEDHA_EOF
 vedha-config-apply 40-memory.yaml && vedha-keycheck
@@ -2109,6 +2114,9 @@ Run these in **fresh** sessions started with `cd /srv/vedha/workspace && hermes`
 6. Temporary-memory test: add a disposable item with an expiry. After expiry, Veda must ignore it as current information and propose cleanup rather than using it as a present fact.
 7. Ask `What do you remember about me?` Expected: Veda distinguishes durable facts/preferences from inferred or temporary items and does not invent anything.
 8. Say `Forget the Gradle preference and the temporary test item.` Expected: they stop being used and durable entries are removed when possible.
+9. Run `hermes journey --json` and `/journey`. Expected: learning nodes are visible.
+10. Use `session_search` to retrieve a detail intentionally absent from MEMORY.md; expected exact historical recall.
+11. Ask Veda to create a reusable skill. With `skills.write_approval: true`, the write must appear under `/skills pending` and remain unapplied until approved.
 
 ### Expected result
 - All three files are deployed and within budget. No placeholders remain in your local `USER.md`.
@@ -2137,6 +2145,99 @@ Previous versions are in `state/persona-history/<timestamp>/` and in git history
 
 ---
 
+---
+## Stage 4.5 — Long-Term Memory, Semantic Recall & External Provider
+
+### Objective
+Add a long-term semantic layer without replacing Hermes native memory, session history, or the learning journey. V3 canonical provider: **Hindsight Local Embedded** after Stage 4 passes. Only one external memory provider may be active.
+
+Hermes v0.21.6 already provides USER.md/MEMORY.md, session_search over SQLite FTS5, hermes journey, and agent-managed skills. Hindsight adds semantic/entity-aware recall and reflection across many sessions.
+
+### Provider decision tree
+
+| Need | Choice | V3 policy |
+|---|---|---|
+| Best overall personal recall | **Hindsight Local Embedded** | Canonical after Stage 4 validation |
+| Deep user-model/dialectic behavior | Honcho self-hosted | Alternative; one provider at a time |
+| Strictly local/no extra service | Holographic | Alternative |
+| Large structured knowledge | OpenViking | Later option |
+| Cloud memory | Any cloud provider | Not part of baseline |
+
+### 4.5.1 — Install Hindsight
+
+```bash
+hermes plugins install hindsight
+hermes plugins list | grep -i hindsight
+hermes memory setup
+hermes memory status
+```
+
+Choose Hindsight and Local Embedded where offered **[VERIFY]**. Do not invent plugin-specific keys if the installed wizard uses a different schema.
+
+### 4.5.2 — Canonical provider policy
+
+Where supported by the installed plugin:
+
+```text
+mode=local_embedded
+memory_mode=hybrid
+auto_retain=true
+auto_recall=true
+retain_async=true
+recall_budget=mid
+```
+
+Record provider/plugin version, storage path, retention behavior, any LLM backend and monthly cost.
+
+### 4.5.3 — Semantic recall smoke test
+
+1. Store a disposable preference.
+2. Start a fresh session.
+3. Ask for it with different wording.
+4. Verify semantic recall.
+5. Forget it.
+6. Verify the paraphrased query no longer returns it.
+
+Also test secret-like values and injected instructions; they must not become trusted memory.
+
+### 4.5.4 — Honcho alternative
+
+Honcho is preferable when deep user/AI relationship modeling and dialectic context matter more than raw recall.
+
+```bash
+hermes plugins install honcho
+hermes memory setup
+hermes memory status
+```
+
+Use self-hosting for privacy. Do not enable Honcho and Hindsight together.
+
+### 4.5.5 — Source-of-truth rule
+
+Never promote every retrieved fact into MEMORY.md:
+
+```text
+session history
+    ↓
+semantic memory
+    ↓
+candidate insight
+    ↓
+confidence + privacy + usefulness gate
+    ↓
+USER.md / MEMORY.md only when genuinely hot
+```
+
+### Completion checklist
+```text
+[ ] Stage 4 memory tests passed first
+[ ] Hindsight active OR documented alternative selected
+[ ] semantic recall + forget tests passed
+[ ] provider storage/cost recorded
+[ ] no second external provider active
+```
+
+---
 ## Stage 5 — Web Research & Prompt-Injection/Exfiltration Hardening
 
 ### Objective
@@ -2399,9 +2500,9 @@ delegation:
   provider: openrouter
   model: deepseek/deepseek-v4.1-flash
   reasoning_effort: high               # Hermes name, not DeepSeek's numeric value
-  max_iterations: 100                  # explicit; defaults have changed between releases [VERIFY]
-  max_concurrent_children: 2           # bounded for 16 GB RAM and cost
-  child_timeout_seconds: 1800          # inactivity cap, not total runtime [VERIFY]
+  max_iterations: 75                   # strict upper bound; raise only with evidence
+  max_concurrent_children: 2           # bounded for cost and workspace contention
+  child_timeout_seconds: 1200          # inactivity cap [VERIFY]
   max_spawn_depth: 1                   # no recursive delegation
   oneshot_max_children: 2
   fallback_providers: []               # child-scoped; explicitly none [VERIFY]
@@ -2438,6 +2539,16 @@ If the child succeeds, the pin is not honoured for children: stop and fix it (se
 hermes tools        # enable delegation for the cli platform
 ```
 Children inherit the parent's enabled toolsets. You cannot widen them per call. There is also no per-call model or effort argument **[VERIFY row 62]**.
+**Delegation prompt contract:** start substantial child tasks with an execution-first context:
+
+```text
+EXECUTE DIRECTLY. Use the available tools to inspect, modify and test the target files.
+Do not spend the response on conversational preamble.
+Do not expose hidden reasoning or internal scratchpad content.
+If blocked, return a concise blocker plus the exact verification that could not run.
+```
+
+Keep iterations/timeouts bounded. This contains malformed tool-call / empty-response retry behavior and prevents runaway credit burn.
 
 **7.3b — Do children get the workspace `AGENTS.md`? [VERIFY row 16]**
 In a session started from `/srv/vedha/workspace`, send:
