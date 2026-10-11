@@ -1,11 +1,11 @@
-# Hermes Agent "Veda" — Staged Implementation Guide (v2.2)
+# Hermes Agent "Veda" — Staged Implementation Guide (V3)
 
 | | |
 |---|---|
-| **Target host** | Windows 11 · GTX 1660 Super (6 GB) · 16 GB DDR4 · i3-10105F |
-| **Guide revision** | v2.2 — v2.1.1 plus the Personal Learning & Adaptive Memory layer, explicit proactivity levels, learning review and validation drills. |
-| **Release anchor** | Hermes Agent **v0.21.5** (`v2026.9.24`, commit `f97608f178d1ffeca59860195ab7da295f7c8e5f`) — taken from v1; re-confirm per Appendix J before installing. |
-| **Models** | GLM-5.3-Flash (primary) and DeepSeek V4.1 Flash (delegated), both via OpenRouter, **CoreWeave-only routing**, no model-level fallback. |
+| **Target host** | Windows 11 · **14th-gen Intel Core i3** (record exact SKU) · **24 GB RAM** · **RTX 3060 12 GB** |
+| **Guide revision** | **V3** — major architecture upgrade adding long-term semantic memory, native learning-journey/session recall, self-model, feedback, goals/world-state, evaluation, change-control, safer remote boundaries, cost observability, gaming mode, red-team drills and optional Windows integration. V2.2 infrastructure is retained. |
+| **Release anchor** | Hermes Agent **v0.21.6** (`2026.10.08`, commit `818c13be1dc4fd28987e1e881a9408224afd4535`) — pin this exact commit; do not install `main`. Re-confirm per Appendix J before installing. |
+| **Models** | GLM-5.3-Flash (primary) and DeepSeek V4.1 Flash (delegated), both via OpenRouter, **CoreWeave-only routing**, no model-level fallback. Any future stronger reasoning model is a separate audited architecture change. |
 | **Assistant name / project name** | The assistant is called **Veda**; the project, its folders and scripts are called **Vedha** (`/srv/vedha`, `vedha-*`). |
 
 ---
@@ -15,8 +15,8 @@
 | Part | Sections |
 |---|---|
 | Start here | [How to read this guide](#how-to-read-this-guide) · [Before you start: basics for first-time users](#before-you-start-basics-for-first-time-users) · [What you need before Stage 0](#what-you-need-before-stage-0) · [Architecture at a glance](#architecture-at-a-glance) · [Storage layout](#project-vedha-storage-layout-mandatory) |
-| Build | [Stage 0](#stage-0--windows-host-preparation) · [Stage 1](#stage-1--wsl-foundation-storage-root-ops-toolkit--pinned-hermes-install) · [Stage 2](#stage-2--primary-model-complete-coreweave-routing-policy--basic-chat) · [Stage 3](#stage-3--execution-boundary-docker-sandbox-approvals--security-foundation) · [Stage 4](#stage-4--identity-adaptive-memory-engineering-context--persistent-memory) · [Stage 5](#stage-5--web-research--prompt-injectionexfiltration-hardening) · [Stage 6](#stage-6--skills-mcp--integrations) · [Stage 7](#stage-7--delegated-coding-model-deepseek-v41-flash) |
-| Operate | [Stage 8](#stage-8--automation-cron--background-work) · [Stage 9](#stage-9--telegram-gateway--always-on-operation) · [Stage 10](#stage-10--additional-messaging-platforms-optional) · [Stage 11](#stage-11--reliability-cost-observability--alerting) · [Stage 12](#stage-12--local-voice-pipeline-stt--tts--wake-word--barge-in) · [Stage 13](#stage-13--proactive-jarvis-capabilities--personal-growth) · [Stage 14](#stage-14--failure-mode-drills) · [Final Stage](#final-stage--end-to-end-validation-backup-restore-drill--update-procedure) |
+| Build | [Stage 0](#stage-0--windows-host-preparation) · [Stage 1](#stage-1--wsl-foundation-storage-root-ops-toolkit--pinned-hermes-install) · [Stage 2](#stage-2--primary-model-complete-coreweave-routing-policy--basic-chat) · [Stage 3](#stage-3--execution-boundary-docker-sandbox-approvals--security-foundation) · [Stage 4](#stage-4--identity-adaptive-memory-engineering-context--persistent-memory) · **[Stage 4.5](#stage-45--long-term-memory-semantic-recall--external-provider)** · [Stage 5](#stage-5--web-research--prompt-injectionexfiltration-hardening) · [Stage 6](#stage-6--skills-mcp--integrations) · [Stage 7](#stage-7--delegated-coding-model-deepseek-v41-flash) |
+| Operate | [Stage 8](#stage-8--automation-cron--background-work) · [Stage 9](#stage-9--telegram-gateway--always-on-operation) · [Stage 10](#stage-10--additional-messaging-platforms-optional) · [Stage 11](#stage-11--reliability-cost-observability--alerting) · [Stage 12](#stage-12--local-voice-pipeline-stt--tts--wake-word--barge-in) · [Stage 13](#stage-13--proactive-jarvis-capabilities--personal-growth) · [Stage 14](#stage-14--failure-mode-drills) · **[Stage 15](#stage-15--growth-layer-self-model-feedback-evaluation--change-control)** · **[Stage 16](#stage-16--optional-windows-bridge--local-presence)** · [Final Stage](#final-stage--end-to-end-validation-backup-restore-drill--update-procedure) |
 | Reference | [A Models](#appendix-a--model--architecture-reference) · [B Do's and Don'ts](#appendix-b--consolidated-dos-and-donts) · [C Troubleshooting](#appendix-c--troubleshooting-reference) · [D Resources](#appendix-d--resources) · [E Upgrades](#appendix-e--future-hardware-upgrade-path) · [F Quick reference](#appendix-f--quick-reference) · [G Bare metal](#appendix-g--bare-metal-linux-alternative-to-stages-01) · [H Cloud voice](#appendix-h--cloud-voice-alternatives-inactive) · [I Security model](#appendix-i--agent-security-model) · [J Ledger](#appendix-j--config-fragments-release-assumption-ledger--audits) · [K Changelog](#appendix-k--changelog-and-validation-record) · [L Resource budget](#appendix-l--resource-budget-16-gb-host-estimates-measure-and-adjust) |
 
 ---
@@ -123,6 +123,7 @@ Each stage adds one capability that you can verify on its own, on top of everyth
 [ ] Stage 2  — Primary Model, Complete CoreWeave Routing Policy & Basic Chat
 [ ] Stage 3  — Execution Boundary (Docker Sandbox), Approvals & Security Foundation
 [ ] Stage 4  — Identity, Adaptive Memory, Engineering Context & Persistent Memory
+[ ] Stage 4.5 — Long-Term Memory, Semantic Recall & External Provider (Hindsight default)
 [ ] Stage 5  — Web Research & Prompt-Injection/Exfiltration Hardening
 [ ] Stage 6  — Skills, MCP & Integrations
 [ ] Stage 7  — Delegated Coding Model (DeepSeek V4.1 Flash)
@@ -133,6 +134,8 @@ Each stage adds one capability that you can verify on its own, on top of everyth
 [ ] Stage 12 — Local Voice Pipeline (STT + TTS + Wake Word + Barge-in)
 [ ] Stage 13 — Proactive "Jarvis" Capabilities & Personal Growth
 [ ] Stage 14 — Failure-Mode Drills
+[ ] Stage 15 — Growth Layer, Self-Model, Feedback, Evaluation & Change Control
+[ ] Stage 16 — Optional Windows Bridge & Local Presence
 [ ] Final    — End-to-End Validation, Backup, Restore Drill & Update Procedure
 ```
 
@@ -168,7 +171,13 @@ Stage 0 (Windows host) ─► Stage 1 (WSL + toolkit + Hermes)
                               ▼
                          Stage 13 (Proactive features + personal growth)
                               ▼
-                         Stage 14 (Failure drills) ─► Final
+                         Stage 14 (Failure drills)
+                              ▼
+                         Stage 15 (Growth/evaluation/change control)
+                              ▼
+                         Stage 16 (optional Windows bridge)
+                              ▼
+                         Final
 ```
 
 **Why this order:**
