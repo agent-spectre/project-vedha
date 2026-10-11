@@ -861,6 +861,7 @@ tools list|--platform
 status|--full
 status|--short
 mcp add|--url
+plugins|validate
 config|check
 config|set
 fallback|list
@@ -5075,7 +5076,7 @@ Record D19/D20 in `ops/docs/drills.md` and repeat them after future changes to t
 |---|---|---|---|---|
 | Primary | `z-ai/glm-5.3-flash` | OpenRouter → CoreWeave only | `10-model`, `11-routing` | Conversation, research, automation, light coding |
 | Delegated | `deepseek/deepseek-v4.1-flash` | OpenRouter → CoreWeave only | `70-delegation`, `11-routing` | Coding, debugging, long tool loops |
-| Auxiliary | `z-ai/glm-5.3-flash` | OpenRouter → CoreWeave only | `12-auxiliary` | Titles, compression, vision, memory rewrite, approvals, MCP, etc. |
+| Auxiliary | `z-ai/glm-5.3-flash` | OpenRouter → CoreWeave only | `12-auxiliary` | Titles, compression, vision, memory rewrite, approvals, MCP, **voice_chat**, etc. |
 | STT | `large-v3-turbo` multilingual default, English-only distil alternative | Local CUDA | `hermes-stt.service`, `120-voice` | Speech recognition |
 | TTS | Kokoro-82M via Kokoro-FastAPI | Local Docker (GPU or CPU) | `compose/kokoro.yaml`, `120-voice` | Speech synthesis |
 | Hot memory | `USER.md` + `MEMORY.md` | Hermes built-in memory | Stage 4 | Compact always-on personal facts |\n| Episodic recall | `session_search` / FTS5 + session database | Local | Stage 4/15 | Exact historical recall |\n| Semantic memory | Hindsight Local Embedded (default) | Local provider | Stage 4.5 | Cross-session semantic/entity recall |\n| User-model alternative | Honcho self-hosted | Local/service | Stage 4.5 | Deep relationship/dialectic context |\n| Self-model | `VEDA-SELF-MODEL.md` | Version-controlled ops repo | Stage 15 | Evolving relationship model without SOUL drift |\n| Growth state | feedback/proposals/world/goals/initiatives | `/srv/vedha/state/growth/` | Stage 15 | Governed adaptation and proactive planning |
