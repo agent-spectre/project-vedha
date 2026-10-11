@@ -4891,6 +4891,10 @@ Gemini is not part of this architecture. (`gemini-2.0-flash` and `-flash-lite` w
 - Don't run parallel delegated children against the same files.
 - Don't connect employer accounts or put employer or client material anywhere in Vedha.
 - Don't add cloud STT/TTS keys to the local voice path.
+- Don't enable Telegram Profile B as the V3 baseline; mobile remains Profile A.
+- Don't run `docker volume prune -f`; clean only disposable images/containers/build cache.
+- Don't let feedback, learning review or memory promotion silently rewrite `SOUL.md`.
+- Don't add a second semantic-memory/vector store without a measured retrieval benchmark and maintenance plan.
 
 ---
 
