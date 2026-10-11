@@ -5176,7 +5176,7 @@ Each **[VERIFY]** in this guide maps to a row here; newer tags name the row dire
 
 | # | Assumption | How to verify |
 |---|---|---|
-| 1 | Tag `v0.21.6` = commit `f97608f…` (v0.21.6) | `git ls-remote https://github.com/NousResearch/hermes-agent refs/tags/v0.21.6` |
+| 1 | Tag/commit pin: `v0.21.6` / `818c13be1dc4fd28987e1e881a9408224afd4535` | `git ls-remote https://github.com/NousResearch/hermes-agent refs/tags/v0.21.6`; then verify the release commit and run `hermes dump` |
 | 2 | `requires-python >=3.11,<3.14`; `all` extra exists; `uv.lock` present | `vedha-install-release` output; `grep -n` in `pyproject.toml` |
 | 3 | All config keys used exist | `vedha-keycheck` |
 | 4 | CLI flags (`--oneshot`, `--external-supervisor`, `--script`, `--no-agent`, `tools --summary`, `--platform`, …) | `vedha-keycheck` (CLI section; extend `cli-assumptions.txt`) |
@@ -5248,6 +5248,28 @@ Each **[VERIFY]** in this guide maps to a row here; newer tags name the row dire
 | 70 | Mode B: WSL runs from an "at startup, whether logged on or not" task session on your build | Reboot test without sign-in (9.8 Mode B) |
 | 71 | Docker network-mode name for a net-session sandbox (e.g. `bridge`) for `VEDHA_EXPECT_NETWORK` | `docker inspect -f '{{.HostConfig.NetworkMode}}' <container>` during a net session |
 | 72 | WhatsApp bridge requirements (e.g. Node.js version) | `hermes gateway setup` → WhatsApp; Hermes docs |
+### V3 release/growth assumptions — rows 73–90
+
+| # | Assumption | How to verify |
+|---|---|---|
+| 73 | v0.21.6 release commit/date; note `hermes --version` may display stale release metadata | `hermes dump`; compare commit to `818c13be1dc4fd28987e1e881a9408224afd4535` and inspect the installed source stamp |
+| 74 | Built-in memory limits are USER.md 1375 chars and MEMORY.md 2200 chars | Stage 4.1 source grep against the pinned checkout |
+| 75 | `skills.write_approval: true` gates every agent-managed skill write | `hermes config check`; create a disposable skill and verify `/skills pending` |
+| 76 | `session_search` provides exact historical recall | `hermes tools --summary`; run an old-session query |
+| 77 | `hermes journey` exposes learning events suitable for governance | `hermes journey --help`; `hermes journey --json` |
+| 78 | Hindsight Local Embedded is available in the installed plugin | `hermes plugins install hindsight`; `hermes memory setup` |
+| 79 | Only one external memory provider is active while built-in memory remains active | `hermes memory status`; inspect provider configuration |
+| 80 | Hindsight retention/recall configuration matches the installed plugin | `$HERMES_HOME/hindsight/config.json`; plugin docs; semantic recall smoke test |
+| 81 | DeepSeek delegated child cap of 75 iterations and 1200 s inactivity timeout is accepted | `vedha-keycheck`; `hermes config check`; D25 |
+| 82 | Telegram Profile A has no terminal/code/file/delegation/messaging toolsets | `hermes tools list --platform telegram`; D26 |
+| 83 | `large-v3-turbo` is the intended faster-whisper multilingual identifier | Verify against the installed faster-whisper model list/version |
+| 84 | `vedha-game-mode` safely stops/restarts STT and Kokoro | Stage 12 smoke test; D14 |
+| 85 | RAM thresholds 2500/1500 MB are appropriate for the 24 GB host | Stage 11 measurements; tune in validation ledger |
+| 86 | `vedha-docker-gc` never removes named volumes | Verify `vedha-m2` and Kokoro volumes survive a dry run/test |
+| 87 | OpenRouter key endpoint fields used by `vedha-cost-report` remain valid | `or_api -f https://openrouter.ai/api/v1/key` |
+| 88 | Self-model/world-state/change-control are not always injected into every prompt | Prompt-size/context-source test in Stage 15 |
+| 89 | Optional Windows bridge is loopback-only and cannot execute arbitrary commands | Bridge process/port inspection; D30 |
+| 90 | Persona regression, red-team and monthly restore procedures pass before higher autonomy | Stage 15; D27/D30; Final restore |
 
 ### Auxiliary-route audit ledger
 Lives in `ops/docs/aux-audit.md` (Stage 2.8, completed in 11.7). Add a row before trusting **any** newly enabled LLM-backed feature.
