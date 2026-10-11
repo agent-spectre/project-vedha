@@ -4214,9 +4214,11 @@ git -C /srv/vedha/ops add -A && git -C /srv/vedha/ops commit -qm "Stage 13: dige
 ```
 The digest runs at 21:00. If that falls inside your quiet hours, change `OnCalendar=` in `vedha-digest.timer`, then `systemctl --user daemon-reload`. Scheduled messages must respect the SOUL.md proactivity contract too; only health **failures** are allowed to arrive during quiet hours.
 
-**13.7 — Out of scope for this build (future)**
-- **Windows desktop control:** Veda runs in WSL and a sandbox, so it can't drive Windows apps. A future option is a narrowly scoped Windows-side MCP server (notifications, media keys) running on 127.0.0.1, reviewed like any other integration.
-- **Low-power always-on host:** a mini PC or VPS for the gateway, so the gaming PC can sleep. This is a new architecture decision with its own validation.
+**13.7 — Windows desktop control moves to Stage 16 (optional, off by default)**
+The trusted baseline remains WSL + Docker + Telegram Profile A. Windows-side awareness is added only through the separately reviewed local bridge in Stage 16.
+
+**13.8 — Low-power always-on host remains future architecture**
+A mini PC or VPS for the gateway is still optional and is a separate deployment architecture with its own privacy/routing review.
 
 ### Verification / Testing
 1. `hermes cron list` shows the briefing with the right **local** next-run time; after it fires, the Telegram message arrived and its cost appears in Activity.
@@ -4460,7 +4462,7 @@ A tray/HUD can show listening, thinking, speaking, busy, gaming, degraded and of
 [ ]  6. Delegated coding task; Activity: DeepSeek on CoreWeave (child), GLM on CoreWeave (parent)
 [ ]  7. Java/Maven delegated test passes offline
 [ ]  8. One-shot cron side effect verified; heartbeat fresh
-[ ]  9. Telegram text round trip; tool profile behaves as chosen (A or B)
+[ ]  9. Telegram text round trip; **Profile A** is verified (no terminal/code/file/delegation toolsets)
 [ ] 10. Telegram voice round trip (if enabled)
 [ ] 11. Local voice round trip with wake word/barge-in (if enabled); latency within budget
 [ ] 12. /agents during a delegated task; /stop interrupts it
@@ -4479,6 +4481,8 @@ A tray/HUD can show listening, thinking, speaking, busy, gaming, degraded and of
 **Gateway and automation:** one gateway; survives a real reboot; unauthorized senders rejected; cron and heartbeat healthy; alerts working.
 **Voice:** STT on CUDA, offline-capable; Kokoro localhost-only; latency recorded; no OOM under concurrency.
 **Recoverability:** encrypted backup exists, is mirrored and has an offsite copy; restore drill PASS; rollback tested.
+**Growth:** session_search, hermes journey, semantic memory, governed reflection, self-model, feedback, persona evaluation and skill approval work together without silent self-modification.
+**Remote security:** Telegram Profile A remains the mobile baseline; execution is local unless Stage 16 is separately enabled.
 
 ---
 
