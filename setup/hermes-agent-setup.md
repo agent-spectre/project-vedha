@@ -4,7 +4,7 @@
 |---|---|
 | **Target host** | Windows 11 · **14th-gen Intel Core i3** (record exact SKU) · **24 GB RAM** · **RTX 3060 12 GB** |
 | **Guide revision** | **V3** — major architecture upgrade adding long-term semantic memory, native learning-journey/session recall, self-model, feedback, goals/world-state, evaluation, change-control, safer remote boundaries, cost observability, gaming mode, red-team drills and optional Windows integration. V2.2 infrastructure is retained. |
-| **Release anchor** | Hermes Agent **v0.21.6** (`2026.10.08`, commit `818c13be1dc4fd28987e1e881a9408224afd4535`) — pin this exact commit; do not install `main`. Re-confirm per Appendix J before installing. |
+| **Release anchor** | Hermes Agent **v0.21.6** — tag `v0.21.6`, published **October 8, 2026**, commit `818c13be1dc4fd28987e1e881a9408224afd4535`. Pin the exact tag+commit; do not install `main`. |
 | **Models** | GLM-5.3-Flash (primary) and DeepSeek V4.1 Flash (delegated), both via OpenRouter, **CoreWeave-only routing**, no model-level fallback. Any future stronger reasoning model is a separate audited architecture change. |
 | **Assistant name / project name** | The assistant is called **Veda**; the project, its folders and scripts are called **Vedha** (`/srv/vedha`, `vedha-*`). |
 
@@ -191,7 +191,7 @@ Stage 0 (Windows host) ─► Stage 1 (WSL + toolkit + Hermes)
 ## Important notes before you begin
 
 1. **WSL2 is the baseline.** v1 said Hermes documents a native Windows install **[VERIFY]**. Native Windows is a different deployment path. Do not mix it with this guide.
-2. **The exact release matters.** v1 recorded `requires-python >=3.11,<3.14` for v0.21.6 **[VERIFY]**. This guide builds a dedicated Python 3.11 runtime per release and checks the requirement from `pyproject.toml` before installing.
+2. **The exact release matters.** V3 pins Hermes Agent v0.21.6 (tag `v0.21.6`, October 8, 2026, commit `818c13be1dc4fd28987e1e881a9408224afd4535`). Verify the pinned source `requires-python` value before installing.
 3. **Install as your normal WSL user, never with `sudo`.** Only the commands explicitly prefixed with `sudo` need root.
 4. **Built-in memory is always on and size-bounded.** Hermes's `MEMORY.md`/`USER.md` are curated, bounded system-prompt injections **[VERIFY limits]**. The persona files in Stage 4 are written to fit those limits.
 5. **Wake word and barge-in are local-surface features.** They work in the CLI/TUI/desktop, not Telegram **[VERIFY row 61]**. Telegram voice notes are a separate path in.
@@ -206,6 +206,34 @@ Stage 0 (Windows host) ─► Stage 1 (WSL + toolkit + Hermes)
 14. **Start coding sessions from the workspace** (`cd /srv/vedha/workspace && hermes`). Context files are discovered from the host working directory **[VERIFY row 16]**, so a session started elsewhere, and its delegated children, gets no `AGENTS.md` safety rules.
 
 ---
+
+## V0.21.6-specific improvements and security fixes used by V3
+
+Hermes v0.21.6 was released October 8, 2026. The release note calls it a patch release but also says the window contains thousands of upstream changes; full curated notes are deferred to v0.22.0. V3 therefore adopts only changes confirmed in the tagged v0.21.6 source/docs and keeps new optional capabilities behind explicit verification.
+
+### Adopted immediately
+
+| Release change | V3 treatment |
+|---|---|
+| Safer automatic Git operations: repository-defined clean/smudge/process filters are no longer trusted during Hermes-managed snapshots/worktrees | Enabled by using v0.21.6; D31 adds a regression check. |
+| Stronger terminal approval detection for credential uploads and invisible/bidirectional Unicode | Enabled by using v0.21.6; D32/D33 test the boundary. |
+| Native `hermes status --short/--full` | Use `hermes status --full` in `vedha-status`; use `--short` for cheap scripted summaries. |
+| Per-profile third-party plugin host isolation | Recommended V3 setting: `plugins.isolation: host` for non-bundled Python plugins after Stage 6 compatibility testing. It is a process boundary, not a sandbox. |
+| Memory/tool-result/context Unicode scanning improvements | Retain the memory/web/MCP injection tests and add invisible-Unicode fixtures. |
+
+### Adopted as optional upgrades
+
+| Release capability | V3 treatment |
+|---|---|
+| `auxiliary.voice_chat` | Enable in Stage 12 for chained voice turns with reasoning off; route it to pinned GLM/CoreWeave by default. |
+| `stt.streaming: true` | Optional low-latency profile only. Tagged Hermes supports live STT for OpenAI, xAI and ElevenLabs; local faster-whisper stays on the file path. Local STT remains canonical. |
+| Local models + llama.cpp CUDA on Linux | Manual degraded-mode option in Appendix E / Stage 11. Never an automatic provider fallback. |
+
+### Security-fix notes from v0.21.6
+
+The release fixes dashboard authentication rate-limit/body-size/redirect issues, repository Git-filter execution, and an email-gateway sender-allowlist parsing issue. The dashboard/email fixes matter only if those surfaces are enabled later; the Git-filter fix is directly relevant to Veda's coding workflow and is tested by D31.
+
+**Important:** `plugins.isolation: host` does not make an untrusted plugin safe. It prevents plugin Python from being imported into the main Hermes process. Continue reviewing every plugin before installation and keep credentials least-privilege.
 
 ## Execution environment rule
 
@@ -1871,7 +1899,7 @@ cat > /srv/vedha/ops/persona/USER.md <<'VEDHA_EOF'
 - Languages: English (primary), Tamil.
 - Senior software developer in enterprise software: Java, SQL/Oracle, Hibernate, production support, debugging, automation. Expert level.
 - Tracks: AI models and agents, MCP, tool calling, local/self-hosted AI, JVM, developer tooling, PC hardware/GPUs, smartphones and consumer tech.
-- Home PC: Windows 11, 14th-gen Intel Core i3 ([record exact SKU]), 24 GB RAM, RTX 3060 12 GB 6 GB.
+- Home PC: Windows 11, 14th-gen Intel Core i3 ([record exact SKU]), 24 GB RAM, RTX 3060 12 GB.
 - Interests: PC gaming (Dota 2, CS2), anime/manhwa, movies/TV, travel.
 - Building Veda (you) on Hermes Agent as a personal project.
 VEDHA_EOF
