@@ -1057,6 +1057,9 @@ command -v hermes                 # expected: /srv/vedha/ops/bin/hermes
 hermes --version
 hermes doctor
 hermes config check
+
+> **v0.21.6 verification note:** the v0.21.6 CLI can display the previous release date in its human-readable banner. Do **not** use the banner date as the release proof. Use the exact commit plus `hermes dump`, which reports the installed version, upstream commit and release date. **[VERIFY]**
+
 ```
 If the install reports **no `uv.lock`**, the release isn't fully reproducible from source. `runtime/hermes-v0.21.6/vedha-lock.txt` is now your dependency record. **[VERIFY]** that the `all` extra exists (`grep -n 'all' pyproject.toml` under `[project.optional-dependencies]`). If it doesn't, pass the correct extra name.
 
