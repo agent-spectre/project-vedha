@@ -3993,6 +3993,7 @@ cat > /srv/vedha/ops/config/fragments/120-voice.yaml <<'VEDHA_EOF'
 # Stage 12 — [VERIFY] all keys against the v0.21.6 voice/TTS docs and source.
 stt:
   enabled: true
+  streaming: false  # v3 local faster-whisper baseline; optional cloud live streaming is documented in 12.11
   provider: vedha-local
   language: "en"
   providers:
@@ -4072,6 +4073,20 @@ vedha-game-mode status
 ```
 
 While gaming mode is on, health should report stopped voice services as intentional degraded state rather than alerting.
+**12.11 — Hermes v0.21.6 voice-chat route and optional live STT**
+
+V0.21.6 gives chained voice turns their own `auxiliary.voice_chat` route and disables reasoning on that route by default. V3 pins it to GLM/CoreWeave with `reasoning_effort: none`; typed turns continue using the normal session model.
+
+```bash
+hermes config get auxiliary
+hermes status --full
+```
+
+Run one text turn and one interactive voice turn, then confirm the voice turn appears as the `voice_chat` task in usage/activity while the next typed turn returns to the normal model.
+
+**Optional live streaming STT:** V0.21.6 supports `stt.streaming: true` for OpenAI, xAI and ElevenLabs realtime transcription. The local faster-whisper provider in this guide remains the canonical privacy/cost baseline and continues through the file path. Do not add a cloud STT key just to shave latency.
+
+If you later enable cloud live STT, use a separate capped key, document the provider/model/data path, keep the file-path fallback tested, and pass D34 before leaving it enabled.
 **12.10 — Latency measurement**
 ```bash
 espeak-ng -w /srv/vedha/tmp/lat.wav "What time is it in London right now"
