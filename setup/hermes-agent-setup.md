@@ -4478,7 +4478,7 @@ A tray/HUD can show listening, thinking, speaking, busy, gaming, degraded and of
 [ ] 16. Morning briefing and daily digest delivered
 [ ] 17. hermes doctor, hermes config check, hermes cron status: OK
 [ ] 18. vedha-pin-negative-test: pin honoured (gateway stopped for it, then started again)
-[ ] 19. vedha-keycheck: no UNPINNED auxiliary routes; vedha-health policy invariants all PASS
+[ ] 19. Native learning journey + session_search verified\n[ ] 20. Long-term semantic memory verified (or documented alternative)\n[ ] 21. Persona regression suite recorded PASS\n[ ] 22. veda-changes.md and self-model active\n[ ] 23. Safe Docker GC tested; named volumes preserved\n[ ] 24. `vedha-game-mode on/off` tested\n[ ] 25. Telegram Profile A boundary verified\n[ ] 26. hermes doctor, hermes config check, hermes cron status: OK\n[ ] 27. vedha-pin-negative-test: pin honoured; vedha-keycheck clean; health policy invariants PASS\n[ ] 28. D25–D30 growth/remote-security drills passed
 ```
 
 ### Acceptance criteria
@@ -4800,7 +4800,7 @@ After **every** update:
 - The one-shot and heartbeat cron checks.
 - The Telegram round trip and the voice round trip.
 - `vedha-preflight` and `vedha-health --deep`.
-- Drills D1, D6 and D19.
+- Drills D1, D6, D19, D25, D26 and D27.
 
 Also re-run the same checks after Windows, WSL, Docker Desktop, or NVIDIA driver updates.
 
@@ -4834,9 +4834,9 @@ Record D19/D20 in `ops/docs/drills.md` and repeat them after future changes to t
 | Primary | `z-ai/glm-5.3-flash` | OpenRouter → CoreWeave only | `10-model`, `11-routing` | Conversation, research, automation, light coding |
 | Delegated | `deepseek/deepseek-v4.1-flash` | OpenRouter → CoreWeave only | `70-delegation`, `11-routing` | Coding, debugging, long tool loops |
 | Auxiliary | `z-ai/glm-5.3-flash` | OpenRouter → CoreWeave only | `12-auxiliary` | Titles, compression, vision, memory rewrite, approvals, MCP, etc. |
-| STT | `Systran/faster-distil-whisper-large-v3` (EN) or multilingual alternative | Local CUDA | `hermes-stt.service`, `120-voice` | Speech recognition |
+| STT | `large-v3-turbo` multilingual default, English-only distil alternative | Local CUDA | `hermes-stt.service`, `120-voice` | Speech recognition |
 | TTS | Kokoro-82M via Kokoro-FastAPI | Local Docker (GPU or CPU) | `compose/kokoro.yaml`, `120-voice` | Speech synthesis |
-| Personal learning | `USER.md` + `MEMORY.md` + session history | Hermes built-in memory | Stage 4 learning loop; Stage 13 review | Long-term user adaptation without silent self-modification |
+| Hot memory | `USER.md` + `MEMORY.md` | Hermes built-in memory | Stage 4 | Compact always-on personal facts |\n| Episodic recall | `session_search` / FTS5 + session database | Local | Stage 4/15 | Exact historical recall |\n| Semantic memory | Hindsight Local Embedded (default) | Local provider | Stage 4.5 | Cross-session semantic/entity recall |\n| User-model alternative | Honcho self-hosted | Local/service | Stage 4.5 | Deep relationship/dialectic context |\n| Self-model | `VEDA-SELF-MODEL.md` | Version-controlled ops repo | Stage 15 | Evolving relationship model without SOUL drift |\n| Growth state | feedback/proposals/world/goals/initiatives | `/srv/vedha/state/growth/` | Stage 15 | Governed adaptation and proactive planning |
 
 Context limits, capabilities, latency, availability and prices change. The live OpenRouter model pages and `vedha-endpoint-check` snapshots are authoritative at deployment time:
 - https://openrouter.ai/z-ai/glm-5.3-flash
@@ -4990,7 +4990,7 @@ Treat official docs and source as authoritative. Community reports are leads unt
 ## Appendix E — Future Hardware Upgrade Path
 
 - A 16 GB+ GPU and more RAM make a local LLM or VLM, full-size Whisper and Kokoro practical at the same time. Choose models fresh at that point; names and memory needs change quickly.
-- **Planned upgrade (from v1):** Ryzen 7 7600X3D, 64 GB RAM, RTX 5060 Ti. Retune `.wslconfig` from measurements. v1's starting point for that host: `memory=24GB`, `processors=10`. **Don't** copy it onto the current 16 GB host; it would starve Windows.
+- **V3 hardware target:** 14th-gen Intel Core i3 (record exact SKU), 24 GB RAM, RTX 3060 12 GB. Start with `.wslconfig` `memory=16GB`, `swap=8GB`, then retune from measurements.\n- The Ryzen 7 7600X3D / 64 GB / RTX 5060 Ti plan in V2.2 is historical and is no longer the V3 target.
 - A local VLM only matters if you want offline or private visual analysis. Hermes image handling doesn't need one.
 - Re-run Stage 1 GPU checks, Stage 12 concurrency, Stage 14 drills D14/D15, and the full Final validation after any hardware change.
 - An optional local fallback model would be a new architecture decision with its own routing audit. It isn't "fallback" in the Hermes sense unless you deliberately configure it.
