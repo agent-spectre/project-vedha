@@ -2099,7 +2099,7 @@ Run these in **fresh** sessions started with `cd /srv/vedha/workspace && hermes`
 5. Inference test: provide repeated behavior without asking Veda to remember it. Expected: Veda may propose an inference, but it must label it as inferred and ask before promoting it to durable memory.
 6. Temporary-memory test: add a disposable item with an expiry. After expiry, Veda must ignore it as current information and propose cleanup rather than using it as a present fact.
 7. Ask `What do you remember about me?` Expected: Veda distinguishes durable facts/preferences from inferred or temporary items and does not invent anything.
-8. Say `Forget the Gradle preference and the temporary test item.` Expected: they stop being used and durable entries are removed when possible..
+8. Say `Forget the Gradle preference and the temporary test item.` Expected: they stop being used and durable entries are removed when possible.
 
 ### Expected result
 - All three files are deployed and within budget. No placeholders remain in your local `USER.md`.
@@ -4014,6 +4014,9 @@ Remove the briefing/reminder/learning-review jobs (8.5 remove subcommand). Disab
 [ ] (Recommended) Weekly personal-learning review scheduled or deliberately left manual
 [ ] Memory contradiction, inference, expiry and forget behavior tested
 ```
+
+---
+
 ## Stage 14 — Failure-Mode Drills
 
 ### Objective
