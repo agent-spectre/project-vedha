@@ -4085,6 +4085,19 @@ Make Veda proactive **and capable of controlled personal growth**: briefings, re
 
 **13.0 — Apply the three-level proactivity model**
 
+**13.0a — Interruption policy**
+
+| Class | Examples | Policy |
+|---|---|---|
+| Critical | security incident, backup failure, service outage, credential compromise | Alert immediately when necessary |
+| Time-sensitive | calendar conflict, deadline, travel change | Alert in allowed hours unless explicitly opted-in for urgent delivery |
+| Useful | daily briefing, project status | Batch into scheduled digest |
+| Interesting | AI/gadget/news suggestions | Digest only |
+| Never interrupt | routine memory proposal, low-value research completion | Wait for the next user interaction |
+
+**Initiative budget:** max 3 unsolicited non-critical messages/day; never repeat the same suggestion until state changes; one suggestion per topic before user response; every initiative records why it ran, permitted actions and a stop condition.
+
+
 Every proactive capability belongs to one level:
 
 | Level | Veda may do | Approval boundary |
@@ -4135,6 +4148,17 @@ For **B**:
 If you run Home Assistant, its MCP server integration **[VERIFY row 44]** can expose a curated set of entities. Expose only what you'd accept Veda toggling, and keep locks, alarms and garage doors **out**.
 
 **13.5 — Weekly personal-learning review (recommended)**
+
+**13.5a — Batched post-conversation reflection (Level 0 only)**
+
+Trigger reflection after substantive sessions, explicit memory requests, user corrections, completed multi-step tasks, repeated preference signals or meaningful skill outcomes. Reflection produces **proposals**, not silent writes.
+
+Each proposal records type, confidence, source, privacy class, expiry/supersedes target and proposed destination. Keep this batched rather than per-message to control cost.
+
+Feedback convention: `feedback: good`, `feedback: wrong because ...`, `feedback: too verbose`, `feedback: too cautious`, `feedback: missed ...`, `feedback: remember ...`.
+
+Promotion still requires the normal approval and verification path.
+
 
 This is a **review**, not an autonomous memory rewrite. It uses a fresh session to inspect the durable profile and memory Veda already has, then reports candidates for cleanup or refinement to you.
 
