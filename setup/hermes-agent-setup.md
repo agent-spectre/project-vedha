@@ -4329,6 +4329,125 @@ fi
 
 ---
 
+---
+## Stage 15 — Growth Layer, Self-Model, Feedback, Evaluation & Change Control
+
+### Objective
+Turn Veda from an agent with memory into a controlled long-term personal system. Growth follows observe → retrieve → reflect → propose → approve → test → activate → review.
+
+### 15.1 — Veda change-control ledger
+```bash
+cat > /srv/vedha/ops/docs/veda-changes.md <<'VEDHA_EOF'
+# Veda change-control ledger
+| Date | Change | Reason | Files/components | Approval | Test result | Rollback |
+|---|---|---|---|---|---|---|
+VEDHA_EOF
+```
+Record intentional changes to SOUL.md, memory providers/policy, skills, MCP servers, cron, tool permissions, model/routing, voice behavior, autonomy and Windows integrations.
+
+### 15.2 — Governed self-model
+Do not let normal conversation rewrite SOUL.md. Create a separate, version-controlled self-model:
+```bash
+cat > /srv/vedha/ops/persona/VEDA-SELF-MODEL.md <<'VEDHA_EOF'
+# Veda self-model
+
+Stable identity: composed, direct, honest, technically rigorous, lightly witty, proactive without nagging, conservative with external side effects.
+
+Evolving relationship model:
+- interaction patterns that improve usefulness
+- preferred explanation depth
+- communication patterns that consistently work
+- recurring mistakes to avoid
+- tools/workflows Veda has become reliable at
+- areas where Veda should ask rather than infer
+
+Confidence: explicit statement > repeated observation > single inference.
+Temporary observations need expiry. Sensitive or credential-adjacent data never enters this file.
+VEDHA_EOF
+git -C /srv/vedha/ops add persona/VEDA-SELF-MODEL.md
+git -C /srv/vedha/ops commit -qm "V3: add governed Veda self-model"
+```
+The self-model is not always injected. Load it for growth/identity tasks only.
+
+### 15.3 — Feedback loop
+Use: feedback: good; feedback: wrong because ...; feedback: too verbose; feedback: too cautious; feedback: missed ...; feedback: remember .... Classify each durable conclusion with source, confidence, privacy class and date.
+
+### 15.4 — Persona regression suite
+Create ops/docs/persona-evals.md with fixed cases for technical help, casual chat, pushback, uncertainty, memory, forget, safety, web injection, voice style and proactivity. Record Hermes commit, model/provider, prompt size, latency and a human 1–5 score. Run after Hermes/model/SOUL/tool changes.
+
+### 15.5 — Skill lifecycle
+Repeated task → skill proposal → human review → skills.write_approval gate → fixed tests → enable → measure → monthly keep/improve/archive. Permanent skills record purpose, inputs, tools, approval boundary, failure behavior, privacy implications and verification tests. Critical skills are never silently overwritten.
+
+### 15.6 — Project memory convention
+For important projects create PROJECT.md, DECISIONS.md and CURRENT.md. Keep global USER/MEMORY compact; keep project-specific decisions in project-local documents and/or semantic memory.
+
+### 15.7 — World state and active goals
+Create:
+```text
+/srv/vedha/state/growth/world/current.md
+/srv/vedha/state/growth/world/goals.md
+/srv/vedha/state/growth/world/initiatives.md
+```
+Goals record purpose, success condition, next review, allowed actions, forbidden actions, priority and status. An initiative runs only inside explicit bounds and the proactivity budget.
+
+### 15.8 — First-week checklist
+Use Veda daily for a real task; test memory write + forget; inspect hermes journey; run vedha-status; record feedback; verify Telegram Profile A; verify voice with headset; review cost; run vedha-health --deep. Do not enable agent-created cron or calendar/email yet.
+
+### 15.9 — First-month checklist
+Prune hot/external memory; review feedback; evaluate learned skills; review self-model and propose only 1–3 changes; measure daily cost; run backup + restore; review cron and interruption behavior; run persona suite and red-team fixture; decide whether any Level 0/1 behavior should become Level 2.
+
+### 15.10 — Red-team Friday
+Test web/document/repository injection, secret disclosure, MCP installation requests, external send/payment/destructive requests, schedule/config changes and delegated attempts to bypass sandbox/network boundaries. Record results in ops/docs/drills.md.
+
+### 15.11 — Monthly restore and memory audit
+Restore the latest encrypted archive into a disposable root; verify config, doctor, memory provider, session DB and hot/semantic memory; run the restore smoke; delete the disposable root; record the result.
+
+### 15.12 — Growth invariants
+Veda must never silently rewrite SOUL.md, broaden Telegram permissions, add MCP/skill sources, create unrestricted cron, unpin providers, promote an inference to a fact, reactivate forgotten memory, or claim tool/memory success without evidence.
+
+### Completion checklist
+```text
+[ ] veda-changes.md active
+[ ] self-model active and governed
+[ ] persona-evals.md recorded
+[ ] feedback convention tested
+[ ] project-memory convention used for one project
+[ ] world-state/goals files created
+[ ] first-week and first-month reviews completed
+[ ] red-team fixture passed
+[ ] monthly restore procedure rehearsed
+[ ] growth invariants reviewed
+```
+
+---
+## Stage 16 — Optional Windows Bridge & Local Presence
+
+### Objective
+Give Veda controlled awareness of Windows without granting an unrestricted remote shell. Disabled by default.
+
+### 16.1 — Bridge design
+Bind a small Windows-side service only to 127.0.0.1. Expose explicit allowlisted functions such as get CPU/GPU/RAM usage, get active window, get/set volume, media play/pause, notifications, launch an allowlisted application and screenshot.
+
+Never expose arbitrary PowerShell, arbitrary process creation, arbitrary filesystem/registry access, browser credentials, shutdown/reboot, firewall/security policy or arbitrary network requests.
+
+### 16.2 — Authentication
+Require a local secret/token. Keep it outside Git. Hermes should access the bridge only through a separately reviewed MCP/HTTP adapter. Telegram Profile A must not have the toolset.
+
+### 16.3 — Safety tiers
+| Tier | Example | Default |
+|---|---|---|
+| Read-only | GPU/RAM/window status | allowed after validation |
+| Reversible | volume/media/notification | ask or pre-approve |
+| Launch | start IntelliJ | allowlist + ask |
+| Destructive/system | shutdown, delete, registry, firewall | never exposed |
+
+### 16.4 — Validation
+Verify loopback-only binding, authentication, rejection of unknown actions, negative-test arbitrary command execution, inspect the Windows process/environment, prove Telegram cannot call it and record its version/hash.
+
+### 16.5 — Cinematic presence
+A tray/HUD can show listening, thinking, speaking, busy, gaming, degraded and offline. It is cosmetic, not a security boundary.
+
+---
 ## Final Stage — End-to-End Validation, Backup, Restore Drill & Update Procedure
 
 ### End-to-end validation (from a clean post-reboot state)
