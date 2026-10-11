@@ -5357,6 +5357,22 @@ Lives in `ops/docs/validation-ledger.md` and in each backup's `MANIFEST.txt`. It
 ---
 
 ## Appendix K — Changelog and Validation Record
+### V2.2 → V3: major architecture upgrade
+
+| ID | Change | Where |
+|---|---|---|
+| V3-01 | Re-pinned canonical build to Hermes v0.21.6 commit 818c13be…; added exact release verification and `hermes dump` guidance | Header, Stage 1, Appendix J/M |
+| V3-02 | Preserved built-in memory while adding native session_search/journey and a one-provider semantic-memory layer, Hindsight Local Embedded by default | Stage 4/4.5, Appendix A |
+| V3-03 | Added `skills.write_approval: true` and explicit learned-skill lifecycle governance | Stage 4, 6, 15 |
+| V3-04 | Added governed self-model, feedback, project memory, world state, goals, initiatives and change-control | Stage 15 |
+| V3-05 | Added interruption classes, initiative budget and batched reflection proposals | Stage 13 |
+| V3-06 | Made Telegram Profile A the canonical remote boundary; Profile B is a separate future experiment | Stage 9, Appendix I |
+| V3-07 | Added persona regression suite, red-team Friday, D25–D30 and monthly restore/memory review | Stage 14/15, Final |
+| V3-08 | Added cost reporting, deterministic status, safe Docker GC and RAM guardrails | Stage 11 |
+| V3-09 | Upgraded baseline resource model to 24 GB RAM / RTX 3060 12 GB and added integrated gaming mode | Stage 0, Stage 12, Appendix L |
+| V3-10 | Added optional loopback-only Windows bridge architecture with allowlisted actions and negative tests | Stage 16 |
+| V3-11 | Retained V2.2 storage, sandbox, CoreWeave pinning, blue/green update, backup/restore, voice, security and operational content; changes are additive unless explicitly superseding a stale assumption | Entire guide |
+
 
 ### v2.1.1 → v2.2: Personal Learning & Adaptive Memory
 
