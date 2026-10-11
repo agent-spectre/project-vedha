@@ -2149,6 +2149,12 @@ Previous versions are in `state/persona-history/<timestamp>/` and in git history
 ---
 ## Stage 4.5 — Long-Term Memory, Semantic Recall & External Provider
 
+### Prerequisites
+```text
+[ ] Stage 4 complete and built-in memory tests pass
+[ ] Stage 11 alerting recommended before unattended provider jobs
+```
+
 ### Objective
 Add a long-term semantic layer without replacing Hermes native memory, session history, or the learning journey. V3 canonical provider: **Hindsight Local Embedded** after Stage 4 passes. Only one external memory provider may be active.
 
@@ -2230,6 +2236,22 @@ confidence + privacy + usefulness gate
     ↓
 USER.md / MEMORY.md only when genuinely hot
 ```
+
+### Verification / Testing
+
+Run `hermes memory status`, a fresh-session semantic recall test, a forget/delete test, and the provider storage/cost check. Record [VERIFY] results in Appendix J.
+
+### Expected result
+
+Fresh sessions semantically recall durable information while built-in hot memory and exact `session_search` remain available.
+
+### Troubleshooting
+
+If the provider is unavailable or recall is noisy, disable it and fall back to built-in memory + `session_search`. Do not let a provider outage silently reroute the LLM.
+
+### Rollback / recovery
+
+Use `hermes memory off`, preserve provider data until you decide what to retain, and record the change in `veda-changes.md`.
 
 ### Completion checklist
 ```text
@@ -4511,6 +4533,18 @@ Restore the latest encrypted archive into a disposable root; verify config, doct
 ### 15.12 — Growth invariants
 Veda must never silently rewrite SOUL.md, broaden Telegram permissions, add MCP/skill sources, create unrestricted cron, unpin providers, promote an inference to a fact, reactivate forgotten memory, or claim tool/memory success without evidence.
 
+### Verification / Testing
+
+Run `vedha-status`, `hermes journey --json`, the persona regression suite, a memory write/forget test, a skill-write approval test and the current red-team fixture.
+
+### Expected result
+
+Growth proposals are observable and reviewable; no persona, config or tool-permission change happens silently.
+
+### Rollback / recovery
+
+Reject pending proposals, revert the related `veda-changes.md` change, restore the last known-good persona/memory snapshot, and rerun the regression suite before re-enabling the change.
+
 ### Completion checklist
 ```text
 [ ] veda-changes.md active
@@ -4567,6 +4601,30 @@ Verify loopback-only binding, authentication, rejection of unknown actions, nega
 
 ### 16.6 — Cinematic presence
 A tray/HUD can show listening, thinking, speaking, busy, gaming, degraded and offline. It is cosmetic, not a security boundary.
+
+### Verification / Testing
+
+Only after Stages 14–15 pass, test every allowlisted bridge action from a trusted local session. Prove Telegram Profile A cannot call it and run D30.
+
+### Expected result
+
+Read-only Windows awareness works without arbitrary OS control, while the sandbox remains network-isolated.
+
+### Rollback / recovery
+
+Disable the bridge toolset, stop the Windows bridge, revoke its local token, remove its integration entry, and rerun the security drills.
+
+### Completion checklist
+
+```text
+[ ] loopback-only binding verified
+[ ] authentication verified
+[ ] arbitrary command/file/registry requests rejected
+[ ] Telegram Profile A cannot access bridge
+[ ] D30 passed
+[ ] version/hash recorded
+```
+
 
 ---
 ## Final Stage — End-to-End Validation, Backup, Restore Drill & Update Procedure
