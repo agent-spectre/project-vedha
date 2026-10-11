@@ -2831,16 +2831,18 @@ If the wizard asks for the token or allowed users again, enter the same values. 
 
 Telegram is a remote control plane. If your phone or Telegram account is compromised, whoever has it controls Veda.
 
-| Profile | Telegram toolsets | Trade-off |
+| Profile | Telegram toolsets | V3 policy |
 |---|---|---|
-| **A — Recommended** | Chat, web (optional), memory. **No** terminal, code execution, file write or send-message/messaging toolset (replies to you don't need it). Delegation off. | Remote coding is not possible. The blast radius is small. |
-| **B — Remote coding** | Same as the CLI, with `approvals.mode: smart`. **Delegation only if Stage 7.3b showed children receive the workspace AGENTS.md** even though the gateway runs from `gateway-cwd`; otherwise delegation off. | Destructive or terminal actions prompt in Telegram (`smart` may auto-approve low-risk ones). Test 9.9 is mandatory. Only choose B if 3.10 showed approvals are enforced in the sandbox. |
+| **A — V3 baseline** | **Chat + optional web + memory only.** No terminal, code execution, file write, browser automation, delegation or messaging toolset. | **Mandatory trusted baseline.** Smallest remote blast radius. |
+| **B — Remote coding** | Full/partial execution from Telegram. | **Not part of V3.** Treat any future enablement as a separate architecture experiment with a new threat model and fresh red-team drills. |
 
 Even Profile A combines private data (memory), untrusted content (web) and an outbound path (the web tool itself). The Telegram canary test in Stage 14 (D11) is therefore mandatory for both profiles.
 
+**V3 remote-boundary rule:** mobile access can ask, research, recall and monitor; it cannot become a general-purpose remote shell. Local terminal/desktop sessions remain the trusted execution surface.
+
 ```bash
-hermes tools                               # select the telegram platform and set toolsets per your profile
-hermes tools list --platform telegram      # record the result in ops/docs/integrations.md
+hermes tools                               # select the Telegram platform; choose V3 Profile A only
+hermes tools list --platform telegram      # MUST show no terminal, code, file-write or delegation toolset; record the result
 ```
 
 **9.6 — Validate in the foreground first**
