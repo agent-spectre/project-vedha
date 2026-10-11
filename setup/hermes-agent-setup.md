@@ -1249,6 +1249,7 @@ auxiliary:
   mcp:                  {provider: openrouter, model: z-ai/glm-5.3-flash, extra_body: {provider: {only: [coreweave], require_parameters: true, data_collection: deny}}}
   background_review:    {provider: openrouter, model: z-ai/glm-5.3-flash, extra_body: {provider: {only: [coreweave], require_parameters: true, data_collection: deny}}}
   tts_audio_tags:       {provider: openrouter, model: z-ai/glm-5.3-flash, extra_body: {provider: {only: [coreweave], require_parameters: true, data_collection: deny}}}
+  voice_chat:           {provider: openrouter, model: z-ai/glm-5.3-flash, reasoning_effort: none, extra_body: {provider: {only: [coreweave], require_parameters: true, data_collection: deny}}}
   # Add one line per extra route listed in aux-routes.txt (2.4a). Names below are examples [VERIFY row 5];
   # uncomment ONLY the ones that exist in your source, or vedha-keycheck reports "config key not found".
   # web_extract:        {provider: openrouter, model: z-ai/glm-5.3-flash, extra_body: {provider: {only: [coreweave], require_parameters: true, data_collection: deny}}}
