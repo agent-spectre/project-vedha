@@ -858,6 +858,8 @@ cron create|--script
 cron create|--no-agent
 tools|--summary
 tools list|--platform
+status|--full
+status|--short
 mcp add|--url
 config|check
 config|set
@@ -3587,7 +3589,7 @@ cat > /srv/vedha/ops/bin/vedha-status <<'VEDHA_EOF'
 set -uo pipefail
 . /srv/vedha/vedha-env.sh
 echo "Veda status — $(date -Is)"
-echo "Release:"; hermes --version 2>/dev/null || true; hermes dump 2>/dev/null | head -n 12 || true
+echo "Release:"; hermes status --full 2>/dev/null || true; hermes status --short 2>/dev/null || true; hermes --version 2>/dev/null || true; hermes dump 2>/dev/null | head -n 12 || true
 echo "Model/routing:"; hermes config get model 2>/dev/null || true; hermes config get provider_routing 2>/dev/null || true
 echo "Tools (CLI):"; hermes tools list --platform cli 2>/dev/null || true
 echo "Memory:"; hermes memory status 2>/dev/null || true
