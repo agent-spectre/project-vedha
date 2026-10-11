@@ -3287,7 +3287,8 @@ C="$HERMES_HOME/config.yaml"
   case $rc_c in 0) pass "clock skew ≤120s";; 2) warn "clock check skipped (Windows clock unreadable from here)";; *) fail "clock skew >120s";; esac
   use="$(df -P "$VEDHA_ROOT" | awk 'NR==2{gsub("%","",$5);print $5}')"
   (( use < 85 )) && pass "disk ${use}%" || { (( use < 95 )) && warn "disk ${use}%" || fail "disk ${use}%"; }
-  avail="$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)"; (( avail > 700 )) && pass "RAM available ${avail} MB" || warn "RAM low: ${avail} MB"
+  avail="$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)"
+  if (( avail >= 2500 )); then pass "RAM available ${avail} MB"; elif (( avail >= 1500 )); then warn "RAM getting low: ${avail} MB"; else fail "RAM critically low: ${avail} MB"; fi
   if unit_enabled vedha-backup.timer; then
     nb="$(ls -1t "$VEDHA_BACKUPS"/vedha-*.tar.gz.age 2>/dev/null | head -n1)"
     [[ -n "$nb" ]] && (( $(date +%s) - $(stat -c %Y "$nb") < 8*86400 )) && pass "newest backup < 8 days old" || fail "no backup in the last 8 days"
@@ -3497,6 +3498,44 @@ vedha-cost-report
 | Retries | Retries after transient failures are billed. Watch for retry storms in the logs. |
 | Measurement | `/usage`, `hermes prompt-size` **[VERIFY]**, Activity. Use these, never a static price table, because pricing changes. |
 
+### 11.10a — vedha-status
+
+```bash
+cat > /srv/vedha/ops/bin/vedha-status <<'VEDHA_EOF'
+#!/usr/bin/env bash
+set -uo pipefail
+. /srv/vedha/vedha-env.sh
+echo "Veda status — $(date -Is)"
+hermes --version 2>/dev/null || true
+echo "Memory:"; hermes memory status 2>/dev/null || true
+echo "Learning:"; hermes journey --json 2>/dev/null | jq '{node_count:(.nodes // [] | length)}' 2>/dev/null || true
+echo "Gateway:"; systemctl --user is-active hermes-gateway 2>/dev/null || true
+echo "Cron:"; hermes cron list 2>/dev/null || true
+echo "Backup:"; ls -1t "$VEDHA_BACKUPS"/vedha-*.tar.gz.age 2>/dev/null | head -n1 || true
+echo "Cost:"; vedha-cost-report 2>/dev/null || true
+VEDHA_EOF
+chmod 755 /srv/vedha/ops/bin/vedha-status
+vedha-status
+```
+
+Keep this command deterministic and read-only.
+
+### 11.10b — Safe Docker/storage hygiene
+
+Never run `docker volume prune -f`; it can delete named state. Use targeted disposable-cache cleanup only:
+
+```bash
+cat > /srv/vedha/ops/bin/vedha-docker-gc <<'VEDHA_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+docker container prune -f --filter "until=168h"
+docker image prune -f --filter "until=168h"
+docker builder prune -f --filter "until=168h"
+echo "Named volumes, tagged sandbox images and Kokoro were preserved."
+VEDHA_EOF
+chmod 755 /srv/vedha/ops/bin/vedha-docker-gc
+vedha-docker-gc
+```
 **11.10 — Retry, rate-limit and side-effect rules**
 
 | Layer | Failure | Policy |
