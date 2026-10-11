@@ -5483,55 +5483,60 @@ Every finding of the offline audit has been applied. IDs refer to the audit repo
 
 ---
 
-## Appendix L — Resource Budget (16 GB host, estimates; measure and adjust)
+## Appendix L — Resource Budget (24 GB host, estimates; measure and adjust)
 
 ### System RAM
 
+Recommended starting point after the hardware upgrade:
+
+```ini
+[wsl2]
+memory=16GB
+swap=8GB
+```
+
+Retune after measuring the real workload. Keep enough RAM available to Windows for games, browsers and desktop applications.
+
 | Consumer | Estimate | Control |
-|---|---|---|
-| Windows + desktop apps | 4–6 GB | outside WSL |
-| WSL kernel + Docker Desktop engine | ~1 GB | — |
-| Hermes gateway (+ agent cache) | 0.5–1.5 GB | `agent_cache.memory_high_mb` (soft; no hard cap) |
-| Interactive Hermes session | 0.3–0.8 GB | — |
-| Sandbox container | ≤ 3 GB | `container_memory: 3072` |
-| STT service | 1.5–2.5 GB | `MemoryMax=3G` **[VERIFY row 69]**, `OOMScoreAdjust=500` |
-| Kokoro (GPU) | 1.5–2.5 GB | `mem_limit: 3g`, `oom_score_adj: 500` (CPU variant similar RAM, no VRAM) |
-| **WSL total, typical full load** | **~8–10 GB** | `.wslconfig memory=10GB` |
-| **WSL total, worst case (all caps reached)** | **~10–12 GB** | Exceeds `memory=10GB` → uses the 6 GB swap on F:; the kernel kills STT/Kokoro (raised OOM score) before the gateway |
+|---|---:|---|
+| Windows + desktop apps | 5–8 GB | outside WSL |
+| WSL kernel + Docker Desktop engine | ~1–1.5 GB | — |
+| Hermes gateway + cache | 0.5–2 GB | `agent_cache.memory_high_mb=2048` |
+| Interactive Hermes sessions | 0.5–1.5 GB | session hygiene / `/new` between topics |
+| Sandbox container | ≤ 4 GB | `container_memory: 4096` |
+| STT service | 1.5–3 GB | `MemoryMax=4G`, `OOMScoreAdjust=500` |
+| Kokoro GPU | ~1–3 GB | `mem_limit: 3g`, `oom_score_adj=500` |
+| Hindsight/provider process | measure on this build | keep local and bounded |
+| **Typical WSL load** | **~10–14 GB** | `.wslconfig memory=16GB` starting point |
+| **Peak target** | **≤15 GB sustained** | keep ~1 GB WSL headroom; use swap for short spikes |
 
-Hard caps alone (sandbox 3 + STT 3 + Kokoro 3 = 9 GB) plus the uncapped gateway, sessions and Docker engine exceed the 10 GB WSL budget. That's acceptable only because swap absorbs peaks and the OOM priorities protect the gateway. Drill D15 is the proof.
+Do not run a high-end local LLM simply because the RTX 3060 has 12 GB VRAM. The V3 primary brain remains cloud-hosted; the GPU is used for STT, TTS and future local embedding/vision experiments.
 
-If Windows becomes sluggish:
-1. Lower `memory` to 9 GB and `container_memory` to 2048.
-2. Run Kokoro on demand (`docker compose … stop`), or switch it to the CPU image.
-3. **Before gaming**, use the gaming-mode commands in Stage 12 "Performance notes": games need the RAM and VRAM that STT and Kokoro hold.
-
-### GPU VRAM (6 GB)
+### GPU VRAM (12 GB)
 
 | Consumer | Estimate |
-|---|---|
-| Windows desktop compositor/apps | 0.5–1 GB |
-| Distil-Whisper large-v3, `int8_float16` | 1–1.5 GB |
-| Kokoro GPU | 1–2 GB |
-| Headroom | ≥ 1.5 GB |
-| A running game (Dota 2, CS2, …) | 2–4 GB (stop STT and Kokoro first, or expect OOM) |
+|---|---:|
+| Windows compositor/apps | 0.5–1.5 GB |
+| Multilingual Whisper/Turbo int8 | ~1.5–2.5 GB |
+| Kokoro GPU | ~1–2 GB |
+| Local embedding/vision experiments | measure before enabling |
+| Headroom for games | ~5–8 GB depending on workload |
 
-Check the real numbers with `nvidia-smi` during drill D14. A local LLM is out of scope for this GPU.
+Use `vedha-game-mode` before heavy gaming. Measure with `nvidia-smi` during D14.
 
 ### Disk (F:)
 
 | Item | Estimate |
-|---|---|
-| Ubuntu VHDX (OS + Vedha + runtimes + models) | 25–40 GB |
-| Docker Desktop disk (sandbox, Kokoro, CUDA images) | 15–30 GB |
-| Backups (14 × encrypted archives locally; grows with workspace and sessions) | 2–20 GB |
-| F: mirror (also pruned to `VEDHA_BACKUP_KEEP`, default 14) | same again |
-| Temporary space during a backup (unencrypted archive + encrypted copy) | ≈ 2 × one archive |
-| Optional monthly `wsl --export` snapshots (unencrypted; delete old ones) | 20–40 GB each |
+|---|---:|
+| Ubuntu VHDX (OS + Vedha + runtimes + models) | 30–50 GB |
+| Docker Desktop disk (sandbox, Kokoro, CUDA images, build cache) | 20–40 GB |
+| Backups (14 × encrypted archives) | 2–30 GB |
+| F: mirror | same again |
+| Temporary backup workspace | ≈ 2 × one archive |
+| Optional monthly `wsl --export` snapshot | 20–40 GB each; unencrypted until separately protected |
 
-Health warns at 85% and fails at 95%. The VHDX doesn't shrink by itself; see `--set-sparse` (Stage 0.4).
+Health warns at 85% and fails at 95%. Keep ≥150 GB free initially so Docker/model/backup growth has room.
 
----
 ## Appendix M — Guide Validation (Maintainer)
 
 Run this after editing the guide. It validates every fenced executable block supported by the local toolchain and checks the path/reference invariants introduced by v2.1.1. PowerShell uses the native `System.Management.Automation.Language.Parser` when `pwsh` is installed; otherwise the validation run reports that PowerShell was not locally parser-checked.
