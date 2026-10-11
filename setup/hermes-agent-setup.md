@@ -3464,6 +3464,25 @@ vedha-health      # "auxiliary routes pinned" must PASS again
 - Delegated children have their own cache lifecycle; measure them separately.
 
 **11.9 — Cost controls summary**
+**11.9a — Cost observability and workload attribution**
+
+Prefer separate low-cap keys for major workloads where practical: primary chat, memory provider, and experiments. Use OpenRouter Activity for exact model/provider/cost attribution rather than static price tables.
+
+```bash
+cat > /srv/vedha/ops/bin/vedha-cost-report <<'VEDHA_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+. /srv/vedha/vedha-env.sh
+. "$VEDHA_OPS/lib/vedha-common.sh"
+echo "== OpenRouter key usage =="
+or_api -fsS https://openrouter.ai/api/v1/key |
+  jq -r '.data | {usage, usage_daily, usage_weekly, usage_monthly, limit, limit_remaining}'
+echo "Use OpenRouter Activity for model/provider/cost attribution."
+VEDHA_EOF
+chmod 755 /srv/vedha/ops/bin/vedha-cost-report
+vedha-cost-report
+```
+
 
 | Control | Where |
 |---|---|
