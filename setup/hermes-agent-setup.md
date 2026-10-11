@@ -5571,6 +5571,19 @@ Lives in `ops/docs/validation-ledger.md` and in each backup's `MANIFEST.txt`. It
 ---
 
 ## Appendix K — Changelog and Validation Record
+
+### V3.0.1 — Hermes v0.21.6 release integration
+
+| ID | Change | Where |
+|---|---|---|
+| R-01 | Audited the official v0.21.6 release notes and pinned tag/commit; documented the unusually large patch window and deferred full curated notes | Header, V0.21.6 section, Appendix J |
+| R-02 | Adopted v0.21.6 Git-filter hardening for untrusted repositories and added D31 | Stage 6/14, Appendix J |
+| R-03 | Adopted stronger credential-upload and invisible-Unicode terminal detection; added D32/D33 and retained injection/MCP scanning | Stages 3/5/14 |
+| R-04 | Added `plugins.isolation: host` baseline for third-party Python plugins with validation and compatibility fallback | Stage 6 |
+| R-05 | Added `auxiliary.voice_chat` pinned to GLM/CoreWeave with reasoning off and optional `stt.streaming` guidance | Stage 2/12 |
+| R-06 | Adopted native `hermes status --short/--full` in operations | Stage 11, Appendix J |
+| R-07 | Added manual local-model/llama.cpp CUDA break-glass path; never automatic fallback | Stage 11 / Appendix E |
+| R-08 | Added v0.21.6 verification rows 91–97 and D31–D34 | Appendix J / Stage 14 |
 ### V2.2 → V3: major architecture upgrade
 
 | ID | Change | Where |
