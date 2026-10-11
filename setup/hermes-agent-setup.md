@@ -300,14 +300,14 @@ Prepare Windows to host an always-on assistant: current GPU driver, no sleep, WS
 ```text
 [ ] Windows 11 with administrator access (see "Before you start" for opening PowerShell as Administrator)
 [ ] F: drive present, NTFS, ideally internal (not removable) and BitLocker-protected
-[ ] At least ~80 GB free on F: (distro, Docker images, models, backups)
+[ ] At least ~150 GB free on F: recommended (100 GB absolute minimum) for distro, Docker images, models, semantic memory and backups
 [ ] Virtualization enabled in the BIOS/UEFI (Task Manager → Performance → CPU shows "Virtualization: Enabled")
 ```
 
 ### Steps
 
 **0.1 — 🪟 Windows GUI: install the current NVIDIA Windows driver**
-1. Open https://www.nvidia.com/Download/index.aspx (or the NVIDIA App), choose **GeForce → GTX 16 Series → GTX 1660 SUPER → Windows 11**, and install the current **Game Ready** or **Studio** driver.
+1. Open https://www.nvidia.com/Download/index.aspx (or the NVIDIA App), choose **GeForce → RTX 30 Series → RTX 3060 → Windows 11**, and install the current **Game Ready** or **Studio** driver.
 2. Reboot when asked.
 
 **The Windows driver provides CUDA to WSL2.** **Never install a Linux NVIDIA driver inside WSL**, because it breaks GPU passthrough.
@@ -367,7 +367,7 @@ wsl --manage Ubuntu --set-sparse true
 
 **0.5 — 🪟 PowerShell: create and deploy `.wslconfig`**
 
-Memory budget (see Appendix L): with 16 GB total, give WSL 10 GB and leave about 6 GB for Windows. If Windows feels starved, drop to 9 GB and run Kokoro on CPU or on demand.
+Memory budget (see Appendix L): with 24 GB total, start WSL at 16 GB and keep roughly 8 GB for Windows. If Windows becomes memory-pressured during gaming, use `vedha-game-mode` and retune `.wslconfig` from measurements.
 
 ```powershell
 $canonical = 'F:\project-vedha\host\wsl\.wslconfig'
@@ -375,9 +375,9 @@ New-Item -ItemType Directory -Force -Path (Split-Path $canonical) | Out-Null
 
 @'
 [wsl2]
-# WSL2 VM budget on a 16 GB host. Docker Desktop (WSL2 backend) containers share this budget.
+# WSL2 VM budget on a 24 GB host. Docker Desktop (WSL2 backend) containers share this budget.
 memory=16GB
-# 14th-gen Intel Core i3 ([record exact SKU]) = 4 cores / 8 threads; expose 6 logical processors.
+# 14th-gen Intel Core i3 ([record exact SKU]); start with 6 logical processors and retune after recording the exact SKU.
 processors=6
 swap=8GB
 # Keep swap on F: (double backslashes are required in .wslconfig paths).
@@ -4496,10 +4496,25 @@ Bind a small Windows-side service only to 127.0.0.1. Expose explicit allowlisted
 
 Never expose arbitrary PowerShell, arbitrary process creation, arbitrary filesystem/registry access, browser credentials, shutdown/reboot, firewall/security policy or arbitrary network requests.
 
-### 16.2 — Authentication
-Require a local secret/token. Keep it outside Git. Hermes should access the bridge only through a separately reviewed MCP/HTTP adapter. Telegram Profile A must not have the toolset.
+### 16.2 — Host-side execution boundary
 
-### 16.3 — Safety tiers
+**Important:** the Windows bridge is a **host-side capability**, not a Docker-sandbox capability. Do not try to reach it from a network-isolated sandbox container: `127.0.0.1` inside the sandbox is the container itself.
+
+The preferred design is:
+```text
+Hermes gateway / reviewed host-side MCP adapter (WSL)
+        │
+        │ loopback / authenticated local hop
+        ▼
+Windows bridge (127.0.0.1:<port>)
+```
+
+The bridge must never require `terminal.docker_network=true`. Its tool implementation runs in the trusted Hermes parent/gateway context or another explicitly reviewed host-side process. If the installed Hermes MCP implementation runs the server inside the sandbox, do not enable this bridge until a host-side transport is available.
+
+### 16.3 — Authentication
+Require a local secret/token. Keep it outside Git. Telegram Profile A must not have the Windows toolset.
+
+### 16.4 — Safety tiers
 | Tier | Example | Default |
 |---|---|---|
 | Read-only | GPU/RAM/window status | allowed after validation |
@@ -4507,10 +4522,10 @@ Require a local secret/token. Keep it outside Git. Hermes should access the brid
 | Launch | start IntelliJ | allowlist + ask |
 | Destructive/system | shutdown, delete, registry, firewall | never exposed |
 
-### 16.4 — Validation
+### 16.5 — Validation
 Verify loopback-only binding, authentication, rejection of unknown actions, negative-test arbitrary command execution, inspect the Windows process/environment, prove Telegram cannot call it and record its version/hash.
 
-### 16.5 — Cinematic presence
+### 16.6 — Cinematic presence
 A tray/HUD can show listening, thinking, speaking, busy, gaming, degraded and offline. It is cosmetic, not a security boundary.
 
 ---
