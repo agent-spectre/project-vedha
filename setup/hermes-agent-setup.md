@@ -2492,6 +2492,27 @@ Rules:
 - Remove any server whose tool surface is broader than you need.
 - MCP traffic can include auxiliary LLM calls (`auxiliary.mcp`, pinned in Stage 2). Add a row to `aux-audit.md` once you trigger one.
 
+**6.5a — v0.21.6 third-party plugin isolation**
+
+Hermes v0.21.6 adds a per-profile host process for non-bundled Python plugins. Use it as the V3 baseline after validating the plugins you actually use:
+
+```bash
+cat > /srv/vedha/ops/config/fragments/65-plugin-isolation.yaml <<'VEDHA_EOF'
+# Hermes v0.21.6 — isolate non-bundled Python plugins from the main Hermes process.
+# This is a process boundary, not a Docker sandbox. Bundled/core plugins are unchanged.
+plugins:
+  isolation: host
+VEDHA_EOF
+hermes config check
+vedha-config-apply 65-plugin-isolation.yaml
+hermes plugins validate
+```
+
+Compatibility rule: a plugin that needs native gateway/platform registration may be refused in host mode. Do not weaken the isolation globally just to make such a plugin load. Keep such an integration bundled/trusted or treat it as a separate audited architecture.
+
+For Hindsight/Honcho and other catalog memory providers, complete the Stage 4.5 provider smoke test and `hermes plugins validate` after enabling host isolation. If a provider is incompatible, record that in the memory-provider decision and leave it disabled until a supported host-compatible path exists.
+
+Host isolation is not a trust substitute: review plugin source before install, use least-privilege credentials and keep third-party code outside the sandbox data boundary.
 **6.5 — Negative tool-surface check (mandatory, even if you installed nothing)**
 ```bash
 hermes tools --summary
