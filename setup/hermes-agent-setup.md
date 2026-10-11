@@ -2056,12 +2056,10 @@ VEDHA_USER_MD_LIMIT=<value-from-4.1> vedha-persona-apply --seed-user     # repla
 ```bash
 cat > /srv/vedha/ops/config/fragments/40-memory.yaml <<'VEDHA_EOF'
 # Stage 4 — built-in memory + governed native learning.
-# v0.21.6 limits: USER.md 1375 chars; MEMORY.md 2200 chars [VERIFY against pinned checkout].
+# v0.21.6 limits are verified in Stage 4.1; they are documented here, not passed as speculative config keys.
 memory:
   memory_enabled: true
   user_profile_enabled: true
-  memory_char_limit: 2200
-  user_char_limit: 1375
   write_approval: true
 skills:
   write_approval: true
@@ -3509,10 +3507,13 @@ cat > /srv/vedha/ops/bin/vedha-status <<'VEDHA_EOF'
 set -uo pipefail
 . /srv/vedha/vedha-env.sh
 echo "Veda status — $(date -Is)"
-hermes --version 2>/dev/null || true
+echo "Release:"; hermes --version 2>/dev/null || true; hermes dump 2>/dev/null | head -n 12 || true
+echo "Model/routing:"; hermes config get model 2>/dev/null || true; hermes config get provider_routing 2>/dev/null || true
+echo "Tools (CLI):"; hermes tools list --platform cli 2>/dev/null || true
 echo "Memory:"; hermes memory status 2>/dev/null || true
 echo "Learning:"; hermes journey --json 2>/dev/null | jq '{node_count:(.nodes // [] | length)}' 2>/dev/null || true
 echo "Gateway:"; systemctl --user is-active hermes-gateway 2>/dev/null || true
+echo "Sandbox:"; yq '.terminal.backend, .terminal.docker_network, .terminal.container_memory' "$HERMES_HOME/config.yaml" 2>/dev/null || true
 echo "Cron:"; hermes cron list 2>/dev/null || true
 echo "Backup:"; ls -1t "$VEDHA_BACKUPS"/vedha-*.tar.gz.age 2>/dev/null | head -n1 || true
 echo "Cost:"; vedha-cost-report 2>/dev/null || true
@@ -3522,6 +3523,22 @@ vedha-status
 ```
 
 Keep this command deterministic and read-only.
+
+### 11.10c — Degraded mode
+
+If OpenRouter/CoreWeave is unavailable, Veda cannot reason normally. Do not replace this with an unreviewed provider.
+
+Allowed without an LLM:
+- `vedha-status`, `vedha-health`, backups/restore preparation, local filesystem integrity checks and service diagnostics;
+- local STT/TTS health checks and deterministic service control;
+- pre-approved script-only jobs that do not need model reasoning.
+
+Disallowed during degraded mode:
+- external messages, purchases, destructive actions or configuration changes;
+- automatic break-glass provider changes;
+- pretending a model response was produced.
+
+Record entry/exit in `ops/docs/break-glass.md` and restore the normal routing before resuming autonomous work.
 
 ### 11.10b — Safe Docker/storage hygiene
 
