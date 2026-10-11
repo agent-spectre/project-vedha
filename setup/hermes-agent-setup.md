@@ -5231,6 +5231,28 @@ Treat official docs and source as authoritative. Community reports are leads unt
 
 ---
 
+## V0.21.6 Local-Model Break-Glass (Manual, Optional)
+
+Hermes v0.21.6 adds local model support, including llama.cpp CUDA on Linux. With the RTX 3060 12 GB this is useful as an emergency/offline path, but it is **not** configured as a fallback in the V3 baseline.
+
+Policy:
+- normal mode: GLM/DeepSeek through OpenRouter/CoreWeave only;
+- break-glass: explicitly stop unattended gateway work, record the decision in `ops/docs/break-glass.md`, switch the model/provider manually and run a local endpoint canary;
+- never silently switch just because CoreWeave is unavailable;
+- never claim the normal CoreWeave routing invariant while break-glass is active.
+
+Evaluation path:
+```text
+1. Pick one small GGUF model appropriate for 12 GB VRAM.
+2. Use Hermes's supported local-model/llama.cpp path.
+3. Run text, tool-call, memory and latency canaries.
+4. Measure VRAM/RAM while voice and Docker are idle/active.
+5. Compare against Stage 11 degraded-mode behavior.
+```
+
+Record model file/hash, quantization, context size, CUDA build, VRAM, RAM and latency before reusing it. Keep the local model offline from external messaging/tool actions until it passes the same security regression suite.
+
+---
 ## Appendix E — Future Hardware Upgrade Path
 
 - A 16 GB+ GPU and more RAM make a local LLM or VLM, full-size Whisper and Kokoro practical at the same time. Choose models fresh at that point; names and memory needs change quickly.
@@ -5514,6 +5536,13 @@ Each **[VERIFY]** in this guide maps to a row here; newer tags name the row dire
 | 88 | Self-model/world-state/change-control are not always injected into every prompt | Prompt-size/context-source test in Stage 15 |
 | 89 | Optional Windows bridge is loopback-only and cannot execute arbitrary commands | Bridge process/port inspection; D30 |
 | 90 | Persona regression, red-team and monthly restore procedures pass before higher autonomy | Stage 15; D27/D30; Final restore |
+| 91 | `plugins.isolation: host` is accepted by the pinned build and compatible with every installed catalog plugin | `hermes config check`; `hermes plugins validate`; run each enabled plugin once |
+| 92 | `auxiliary.voice_chat` is a valid route and honors the CoreWeave pin | `hermes config get auxiliary`; voice canary + OpenRouter Activity |
+| 93 | `stt.streaming` support does not change the local faster-whisper baseline | tagged voice docs/source; local STT test; optional cloud streaming canary |
+| 94 | Hermes automatic Git operations neutralize repository-defined clean/smudge/process filters | D31; inspect tagged `_subprocess_compat.py` behavior |
+| 95 | v0.21.6 approval detection flags invisible/bidi Unicode and credential uploads | D32/D33; inspect tagged `approval_detection.py` |
+| 96 | `hermes status --short/--full` is available | `hermes status --help`; CLI assumptions |
+| 97 | Local model / llama.cpp CUDA can be used as a manual break-glass path | follow Appendix E evaluation; never make it an automatic fallback |
 
 ### Auxiliary-route audit ledger
 Lives in `ops/docs/aux-audit.md` (Stage 2.8, completed in 11.7). Add a row before trusting **any** newly enabled LLM-backed feature.
