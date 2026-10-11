@@ -191,15 +191,15 @@ Stage 0 (Windows host) ─► Stage 1 (WSL + toolkit + Hermes)
 ## Important notes before you begin
 
 1. **WSL2 is the baseline.** v1 said Hermes documents a native Windows install **[VERIFY]**. Native Windows is a different deployment path. Do not mix it with this guide.
-2. **The exact release matters.** v1 recorded `requires-python >=3.11,<3.14` for v0.21.5 **[VERIFY]**. This guide builds a dedicated Python 3.11 runtime per release and checks the requirement from `pyproject.toml` before installing.
+2. **The exact release matters.** v1 recorded `requires-python >=3.11,<3.14` for v0.21.6 **[VERIFY]**. This guide builds a dedicated Python 3.11 runtime per release and checks the requirement from `pyproject.toml` before installing.
 3. **Install as your normal WSL user, never with `sudo`.** Only the commands explicitly prefixed with `sudo` need root.
 4. **Built-in memory is always on and size-bounded.** Hermes's `MEMORY.md`/`USER.md` are curated, bounded system-prompt injections **[VERIFY limits]**. The persona files in Stage 4 are written to fit those limits.
 5. **Wake word and barge-in are local-surface features.** They work in the CLI/TUI/desktop, not Telegram **[VERIFY row 61]**. Telegram voice notes are a separate path in.
 6. **Delegation has one configured child model/provider.** `delegate_task` has no per-call model or effort argument **[VERIFY row 62]**.
 7. **CoreWeave-only is fail-closed by design.** A CoreWeave outage means Veda cannot think. This guide does not hide that. Instead it **detects and alerts** on it without needing an LLM (Stage 11: endpoint listing **and** an authenticated hourly liveness probe, so a revoked key, exhausted credit or real outage all alert), and documents a manual, logged break-glass decision. The pin itself is proven with negative tests (Stages 2.7b, 7.2b, 11.7), not just by seeing CoreWeave in Activity.
 8. **Auxiliary LLM calls do not inherit `provider_routing`** **[VERIFY row 5]**. That is why Stage 2 first lists **every** auxiliary route the pinned source has (2.4a) and pins all of them at the same time as the main model; `vedha-keycheck` fails on any unpinned route.
-9. **Docker cross-process container reuse is disabled** (`docker_persist_across_processes: false`) for v0.21.5 **[VERIFY rationale: upstream #84969]**. Durable state is the host workspace.
-10. **`docker_run_as_host_user: false`** keeps bundled skills predictable on v0.21.5 **[VERIFY rationale: upstream #34026]**. The cost is root-owned files in the workspace, handled by `vedha-repair-ownership`.
+9. **Docker cross-process container reuse is disabled** (`docker_persist_across_processes: false`) for v0.21.6 **[VERIFY rationale: upstream #84969]**. Durable state is the host workspace.
+10. **`docker_run_as_host_user: false`** keeps bundled skills predictable on v0.21.6 **[VERIFY rationale: upstream #34026]**. The cost is root-owned files in the workspace, handled by `vedha-repair-ownership`.
 11. **Cron and the state database get extra verification.** v1 cited WSL-era reports of cron stalls and WAL problems **[VERIFY]**. v2 removes the main risk (DrvFS) by keeping state on ext4. It also adds a heartbeat that detects cron stalls, plus integrity checks.
 12. **Never run `hermes update` on this install.** Updates are blue/green: install the new release side by side, test it against a copy of your state, switch a symlink, and keep the old release for rollback (Final stage).
 13. **Personal use only.** Everything Veda reads is sent to OpenRouter/CoreWeave. **Never put employer or client code, data, logs, or credentials into the Vedha workspace, memory, or chats.** The persona files tell Veda to flag such material.
@@ -376,10 +376,10 @@ New-Item -ItemType Directory -Force -Path (Split-Path $canonical) | Out-Null
 @'
 [wsl2]
 # WSL2 VM budget on a 16 GB host. Docker Desktop (WSL2 backend) containers share this budget.
-memory=10GB
-# i3-10105F = 4 cores / 8 threads; expose 6 logical processors.
+memory=16GB
+# 14th-gen Intel Core i3 ([record exact SKU]) = 4 cores / 8 threads; expose 6 logical processors.
 processors=6
-swap=6GB
+swap=8GB
 # Keep swap on F: (double backslashes are required in .wslconfig paths).
 swapFile=F:\\project-vedha\\host\\wsl\\swap.vhdx
 # Default NAT networking is the validated baseline.
@@ -419,7 +419,7 @@ Docker Desktop shows "Engine running".
 ### Expected result
 - `wsl -l -v` lists **Ubuntu** with **VERSION 2**.
 - `F:\project-vedha\wsl\Ubuntu\ext4.vhdx` exists.
-- `.wslconfig` shows `memory=10GB` and the swap path on F:.
+- `.wslconfig` shows `memory=16GB` and the swap path on F:.
 - The power query shows the AC standby timeout as `0x00000000`.
 - Docker Desktop shows "Engine running" with Ubuntu integration enabled.
 
@@ -542,7 +542,7 @@ docker --version
 docker run --rm hello-world
 docker run --rm --gpus all nvidia/cuda:12.6.0-base-ubuntu24.04 nvidia-smi
 ```
-Expected: the last command prints the GTX 1660 Super. WSL2 + Docker Desktop needs **no** NVIDIA Container Toolkit inside Ubuntu. **[VERIFY]** that the `nvidia/cuda:12.6.0-base-ubuntu24.04` tag exists. If it doesn't, use any current `base-ubuntu24.04` tag.
+Expected: the last command prints the RTX 3060 12 GB. WSL2 + Docker Desktop needs **no** NVIDIA Container Toolkit inside Ubuntu. **[VERIFY]** that the `nvidia/cuda:12.6.0-base-ubuntu24.04` tag exists. If it doesn't, use any current `base-ubuntu24.04` tag.
 
 If this fails: update Docker Desktop and the Windows NVIDIA driver, `wsl --shutdown`, and retry. Do not continue until it passes. Stage 12 depends on it.
 
@@ -1043,22 +1043,22 @@ Expected: all PASS; the filesystem type may report as ext2/ext3 on some `stat -f
 
 Frozen baseline (from v1, **[VERIFY]** on the release page):
 ```text
-Hermes version: v0.21.5
-Release tag:    v2026.9.24
-Commit:         f97608f178d1ffeca59860195ab7da295f7c8e5f
+Hermes version: v0.21.6
+Release tag:    v0.21.6
+Commit:         818c13be1dc4fd28987e1e881a9408224afd4535
 Python:         3.11.x
 ```
 ```bash
 touch /srv/vedha/hermes/.vedha-home
 chmod 700 /srv/vedha/hermes
-vedha-install-release v2026.9.24 f97608f178d1ffeca59860195ab7da295f7c8e5f 3.11 all
-vedha-switch-release v2026.9.24
+vedha-install-release v0.21.6 818c13be1dc4fd28987e1e881a9408224afd4535 3.11 all
+vedha-switch-release v0.21.6
 command -v hermes                 # expected: /srv/vedha/ops/bin/hermes
 hermes --version
 hermes doctor
 hermes config check
 ```
-If the install reports **no `uv.lock`**, the release isn't fully reproducible from source. `runtime/hermes-v2026.9.24/vedha-lock.txt` is now your dependency record. **[VERIFY]** that the `all` extra exists (`grep -n 'all' pyproject.toml` under `[project.optional-dependencies]`). If it doesn't, pass the correct extra name.
+If the install reports **no `uv.lock`**, the release isn't fully reproducible from source. `runtime/hermes-v0.21.6/vedha-lock.txt` is now your dependency record. **[VERIFY]** that the `all` extra exists (`grep -n 'all' pyproject.toml` under `[project.optional-dependencies]`). If it doesn't, pass the correct extra name.
 
 ### Verification / Testing
 
@@ -1076,7 +1076,7 @@ vedha-preflight
 - `/etc/wsl.conf`, journald drop-in, timezone, linger
 - `/srv/vedha` tree, `vedha-env.sh`, profile hooks
 - `ops/` git repo with the core toolkit
-- Hermes v0.21.5 installed side by side and activated through `runtime/current`
+- Hermes v0.21.6 installed side by side and activated through `runtime/current`
 
 ### Troubleshooting
 - **`hermes: command not found`** — `. /srv/vedha/vedha-env.sh`; `command -v hermes` must be `/srv/vedha/ops/bin/hermes`.
@@ -1103,7 +1103,7 @@ vedha-preflight
 [ ] uv and yq installed under /srv/vedha/tools; versions + yq checksum recorded in validation-ledger.md
 [ ] Ledgers created (validation-ledger.md, integrations.md, break-glass.md)
 [ ] ops repo initialized; toolkit scripts committed
-[ ] Hermes v0.21.5 installed from the verified commit; runtime/current → hermes-v2026.9.24
+[ ] Hermes v0.21.6 installed from the verified commit; runtime/current → hermes-v0.21.6
 [ ] hermes --version / doctor / config check OK
 [ ] vedha-preflight: no FAIL
 ```
@@ -1452,7 +1452,7 @@ A pinned, Java-capable sandbox image is built for your real coding work.
 
 **3.1 — Pull, pin and inspect the base sandbox image**
 ```bash
-BASE_TAG="nousresearch/hermes-sandbox:desktop"     # [VERIFY] tag from the v0.21.5 docs/source
+BASE_TAG="nousresearch/hermes-sandbox:desktop"     # [VERIFY] tag from the v0.21.6 docs/source
 docker pull "$BASE_TAG"
 BASE_REF="$(docker image inspect --format '{{index .RepoDigests 0}}' "$BASE_TAG")"; echo "$BASE_REF"
 docker run --rm --entrypoint sh "$BASE_REF" -c 'cat /etc/os-release | head -3; id; echo HOME=$HOME'
@@ -1524,12 +1524,12 @@ terminal:
   docker_volumes:
     - "/srv/vedha/workspace:/workspace"
     - "vedha-m2:${M2_TARGET}"         # cache mounts into the sandbox user's actual $HOME/.m2
-  docker_run_as_host_user: false       # [VERIFY] v0.21.5 bundled-skill compatibility (#34026)
+  docker_run_as_host_user: false       # [VERIFY] v0.21.6 bundled-skill compatibility (#34026)
   container_persistent: true           # within one Hermes process/session
-  docker_persist_across_processes: false   # [VERIFY] v0.21.5 lacks env-fingerprint protection (#84969)
+  docker_persist_across_processes: false   # [VERIFY] v0.21.6 lacks env-fingerprint protection (#84969)
   docker_network: false                # no egress from the sandbox
   container_cpu: 2
-  container_memory: 3072               # MB; see Appendix L budget
+  container_memory: 4096               # MB; see Appendix L budget
   container_disk: 10240
 VEDHA_EOF
 
@@ -1868,7 +1868,7 @@ cat > /srv/vedha/ops/persona/USER.md <<'VEDHA_EOF'
 - Languages: English (primary), Tamil.
 - Senior software developer in enterprise software: Java, SQL/Oracle, Hibernate, production support, debugging, automation. Expert level.
 - Tracks: AI models and agents, MCP, tool calling, local/self-hosted AI, JVM, developer tooling, PC hardware/GPUs, smartphones and consumer tech.
-- Home PC: Windows 11, i3-10105F, 16 GB RAM, GTX 1660 Super 6 GB.
+- Home PC: Windows 11, 14th-gen Intel Core i3 ([record exact SKU]), 24 GB RAM, RTX 3060 12 GB 6 GB.
 - Interests: PC gaming (Dota 2, CS2), anime/manhwa, movies/TV, travel.
 - Building Veda (you) on Hermes Agent as a personal project.
 VEDHA_EOF
@@ -2070,7 +2070,7 @@ vedha-config-apply 40-memory.yaml && vedha-keycheck
 ```bash
 cat > /srv/vedha/ops/docs/ENVIRONMENT.md <<'VEDHA_EOF'
 # Veda environment (reference for humans; not injected into prompts)
-- Host: Windows 11, i3-10105F, 16 GB RAM, GTX 1660 Super 6 GB.
+- Host: Windows 11, 14th-gen Intel Core i3 ([record exact SKU]), 24 GB RAM, RTX 3060 12 GB 6 GB.
 - WSL2 Ubuntu (VHDX on F:\project-vedha\wsl\Ubuntu); Vedha root /srv/vedha; Docker Desktop (disk on F:).
 - LLMs: GLM-5.3-Flash (primary) and DeepSeek V4.1 Flash (delegated) via OpenRouter, CoreWeave only.
 - Voice: local faster-whisper STT service (127.0.0.1:8765), Kokoro-FastAPI TTS (127.0.0.1:8880).
@@ -2421,7 +2421,7 @@ Keep skills in `ops/skills/<skill-name>/SKILL.md` (version-controlled; the direc
 hermes mcp --help
 hermes mcp catalog                           # [VERIFY row 65]
 hermes mcp add "<name>" --url "<https-endpoint>"   # HTTP server
-hermes mcp add --help                        # stdio form for v0.21.5 [VERIFY row 65]
+hermes mcp add --help                        # stdio form for v0.21.6 [VERIFY row 65]
 A=/srv/vedha/ops/config/keycheck-allow.txt; grep -qxF "<name>" "$A" || echo "<name>" >> "$A"   # your server name is not a Hermes key
 vedha-keycheck
 ```
@@ -2449,7 +2449,7 @@ Only the toolsets you deliberately enabled should be active. Record the result (
 - The tool surface is exactly what you intended.
 
 ### Troubleshooting
-- **Skill installs but fails** — check `requires_hermes`, the platform constraints and its dependencies against v0.21.5.
+- **Skill installs but fails** — check `requires_hermes`, the platform constraints and its dependencies against v0.21.6.
 - **Skill wants credentials it doesn't explain** — stop and read its code.
 - **MCP server exposes dozens of tools** — filter them or remove the server.
 - **`vedha-keycheck`: "config key not found in source: <your server name>"** — add the name to `ops/config/keycheck-allow.txt`.
@@ -2557,7 +2557,7 @@ Delegate: report, word for word, the first heading line of the AGENTS.md instruc
 ```
 Expected: the child reports `# AGENTS.md — Global Engineering Instructions (Project Vedha workspace)`. Record the result in the validation ledger. If the child says "none", children have **no** safety rules. Then never delegate from sessions that can't load the workspace `AGENTS.md`; in particular, keep delegation **off** on Telegram (Stage 9.5).
 
-### Behavior you must design around (v1 findings, **[VERIFY]** on v0.21.5)
+### Behavior you must design around (v1 findings, **[VERIFY]** on v0.21.6)
 - **Children start with a fresh conversation.** Their only task context is the `goal` and `context` GLM writes, plus the workspace context chain (`.hermes.md` → `AGENTS.md` → `CLAUDE.md` → `.cursorrules`; **SOUL.md is excluded**). A confused result usually means the goal/context was too thin.
   ```text
   BAD : delegate_task(goal="Fix the error")
@@ -2888,7 +2888,7 @@ systemctl --user status hermes-gateway --no-pager
 journalctl --user -u hermes-gateway -n 50 --no-pager
 git -C /srv/vedha/ops add -A && git -C /srv/vedha/ops commit -qm "Stage 9: gateway unit"
 ```
-From now on, manage it **only** with `systemctl --user {start|stop|restart|status} hermes-gateway`. Don't use `hermes gateway install/start/stop/uninstall`, and don't start a foreground gateway while the unit is running. Two pollers on one bot token cause Telegram 409 conflicts and duplicated actions. **[VERIFY]** that `--external-supervisor` is the right flag for systemd supervision on v0.21.5.
+From now on, manage it **only** with `systemctl --user {start|stop|restart|status} hermes-gateway`. Don't use `hermes gateway install/start/stop/uninstall`, and don't start a foreground gateway while the unit is running. Two pollers on one bot token cause Telegram 409 conflicts and duplicated actions. **[VERIFY]** that `--external-supervisor` is the right flag for systemd supervision on v0.21.6.
 
 **9.8 — Keep the WSL distro running (🪟 PowerShell)**
 WSL stops the distro when no Windows-side client is attached, even with systemd services running. A tiny headless keep-alive task solves this. It is **not** a second gateway launcher.
@@ -3126,7 +3126,7 @@ compression:
   max_attempts: 3
 VEDHA_EOF
 ```
-How the trigger works: Hermes already compresses automatically, so don't invent a separate `context.max_tokens` / `context.auto_compact` layer. v1 recorded that v0.21.5 applies a raise-only **0.75 minimum ratio** to models below 512K context **[VERIFY]**. The effective trigger is the lower of (effective ratio × context window) and `threshold_tokens`. On smaller-context endpoints the ratio usually wins, and `threshold_tokens` mainly caps large-context ones. It's a compression *trigger*, not a reduction of the context window, so don't read it as "compacts at exactly 128K".
+How the trigger works: Hermes already compresses automatically, so don't invent a separate `context.max_tokens` / `context.auto_compact` layer. v1 recorded that v0.21.6 applies a raise-only **0.75 minimum ratio** to models below 512K context **[VERIFY]**. The effective trigger is the lower of (effective ratio × context window) and `threshold_tokens`. On smaller-context endpoints the ratio usually wins, and `threshold_tokens` mainly caps large-context ones. It's a compression *trigger*, not a reduction of the context window, so don't read it as "compacts at exactly 128K".
 
 **11.3 — Gateway agent cache bounds (16 GB host)**
 ```bash
@@ -3135,7 +3135,7 @@ agent:
   agent_cache:                  # [VERIFY] keys
     max_size: 16
     idle_ttl_secs: 1800
-    memory_high_mb: 1536
+    memory_high_mb: 2048
     max_evictions_per_pass: 4
     protect_recent: 4
 VEDHA_EOF
@@ -3816,7 +3816,7 @@ ExecStart=/srv/vedha/services/stt/start.sh
 Restart=always
 RestartSec=30
 # Memory cap [VERIFY row 69: enforced for WSL user units]; under memory pressure the kernel kills STT before the gateway.
-MemoryMax=3G
+MemoryMax=4G
 OOMScoreAdjust=500
 
 [Install]
@@ -3890,7 +3890,7 @@ paplay /srv/vedha/tmp/kokoro-bm_george.wav      # plays through WSLg audio
 **12.8 — Connect STT/TTS to Hermes**
 ```bash
 cat > /srv/vedha/ops/config/fragments/120-voice.yaml <<'VEDHA_EOF'
-# Stage 12 — [VERIFY] all keys against the v0.21.5 voice/TTS docs and source.
+# Stage 12 — [VERIFY] all keys against the v0.21.6 voice/TTS docs and source.
 stt:
   enabled: true
   provider: vedha-local
@@ -3988,7 +3988,7 @@ Record the numbers in the validation ledger. If the LLM step is slow, use `/reas
 **12.11 — Wake word (optional)**
 ```bash
 cat > /srv/vedha/ops/config/fragments/121-wake-word.yaml <<'VEDHA_EOF'
-# [VERIFY] keys/engines against v0.21.5 wake-word docs.
+# [VERIFY] keys/engines against v0.21.6 wake-word docs.
 wake_word:
   enabled: true
   surface: cli
@@ -4019,7 +4019,7 @@ Send a voice note to the bot. Expected: transcribed locally, answered in spoken 
 7. `vedha-health` now covers STT and Kokoro.
 
 ### Performance notes
-- GTX 1660 Super (Turing, CC 7.5) supports `int8_float16`. If you hit OOM, try `int8` and measure the quality and latency difference.
+- RTX 3060 12 GB (Turing, CC 7.5) supports `int8_float16`. If you hit OOM, try `int8` and measure the quality and latency difference.
 - Rough VRAM: distil-large-v3 int8 ≈ 1–1.5 GB, Kokoro GPU ≈ 1–2 GB, Windows desktop ≈ 0.5–1 GB of the 6 GB. Running Kokoro on CPU frees GPU headroom.
 - Keep the model resident. Never load it per utterance.
 - Keep the STT service bound to `127.0.0.1` with uploads size-limited (25 MB in `server.py`).
@@ -4952,7 +4952,7 @@ Use only `vedha-update`. If a switched release misbehaves, use `vedha-rollback` 
 |---|---|---|
 | Hermes docs | https://hermes-agent.nousresearch.com/docs/ | Configuration and features |
 | Hermes quickstart | https://hermes-agent.nousresearch.com/docs/getting-started/quickstart | Clean-install baseline for comparison |
-| Hermes release (pinned) | https://github.com/NousResearch/hermes-agent/releases/tag/v2026.9.24 | Release notes for the pinned build |
+| Hermes release (pinned) | https://github.com/NousResearch/hermes-agent/releases/tag/v0.21.6 | Release notes for the pinned build |
 | Hermes configuration | https://hermes-agent.nousresearch.com/docs/user-guide/configuration | Config schema |
 | Hermes provider routing | https://hermes-agent.nousresearch.com/docs/user-guide/features/provider-routing | Provider pins |
 | Hermes delegation | https://hermes-agent.nousresearch.com/docs/user-guide/features/delegation/ | Children |
@@ -5166,7 +5166,7 @@ Each **[VERIFY]** in this guide maps to a row here; newer tags name the row dire
 
 | # | Assumption | How to verify |
 |---|---|---|
-| 1 | Tag `v2026.9.24` = commit `f97608f…` (v0.21.5) | `git ls-remote https://github.com/NousResearch/hermes-agent refs/tags/v2026.9.24` |
+| 1 | Tag `v0.21.6` = commit `f97608f…` (v0.21.6) | `git ls-remote https://github.com/NousResearch/hermes-agent refs/tags/v0.21.6` |
 | 2 | `requires-python >=3.11,<3.14`; `all` extra exists; `uv.lock` present | `vedha-install-release` output; `grep -n` in `pyproject.toml` |
 | 3 | All config keys used exist | `vedha-keycheck` |
 | 4 | CLI flags (`--oneshot`, `--external-supervisor`, `--script`, `--no-agent`, `tools --summary`, `--platform`, …) | `vedha-keycheck` (CLI section; extend `cli-assumptions.txt`) |
@@ -5688,4 +5688,4 @@ On Windows, run the validator in an environment with `pwsh` installed so the Pow
 
 ---
 
-*Guide revision v2.2 (v2 + offline-audit corrections + consistency, recovery, validation corrections + Personal Learning & Adaptive Memory). Architecture: Hermes Agent v0.21.5 (`v2026.9.24`, verify per Appendix J); GLM-5.3-Flash primary and DeepSeek V4.1 Flash delegated via OpenRouter, CoreWeave-only including auxiliary routes; WSL distro on F: with state on ext4; air-gapped, inspected Docker sandbox; size-bounded persona and memory; single-supervisor gateway with real-reboot survival; LLM-independent health alerting; local STT/TTS with a voice-mode style and latency budget; encrypted backups, restore drill, and blue/green updates.*
+*Guide revision V3 (v2 + offline-audit corrections + consistency, recovery, validation corrections + Personal Learning & Adaptive Memory). Architecture: Hermes Agent v0.21.5 (`v2026.9.24`, verify per Appendix J); GLM-5.3-Flash primary and DeepSeek V4.1 Flash delegated via OpenRouter, CoreWeave-only including auxiliary routes; WSL distro on F: with state on ext4; air-gapped, inspected Docker sandbox; size-bounded persona and memory; single-supervisor gateway with real-reboot survival; LLM-independent health alerting; local STT/TTS with a voice-mode style and latency budget; encrypted backups, restore drill, and blue/green updates.*
