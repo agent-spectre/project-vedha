@@ -3655,8 +3655,8 @@ Goal: ≤ ~3 s from end of speech to first audio. Measure in 12.10.
 
 | Model | Languages | Notes |
 |---|---|---|
-| `Systran/faster-distil-whisper-large-v3` (default) | **English only** | Fast and accurate for English. Tamil will not work. |
-| `large-v3-turbo` (faster-whisper alias **[VERIFY]**) | Multilingual, incl. Tamil | Similar VRAM at int8. Use it if Tamil voice matters (USER.md lists Tamil). |
+| `large-v3-turbo` (faster-whisper identifier **[VERIFY]**) | **Multilingual, incl. Tamil** | **V3 canonical default**; verify the exact identifier exposed by faster-whisper. |
+| `Systran/faster-distil-whisper-large-v3` | English | Lower-latency English-only alternative. |
 
 ### Steps
 
@@ -3677,7 +3677,7 @@ v1 left out `python-multipart`. Without it, FastAPI refuses to start any route t
 
 **12.3 — Pre-download the model (so the service never needs the network at startup)**
 ```bash
-STT_MODEL="Systran/faster-distil-whisper-large-v3"     # canonical English-only model
+STT_MODEL="large-v3-turbo"     # V3 canonical multilingual model; verify exact identifier
 HF_HOME=/srv/vedha/models/hf /srv/vedha/runtime/voice-venv/bin/python -c \
   "from faster_whisper import download_model; print(download_model('$STT_MODEL'))"
 du -sh /srv/vedha/models/hf
@@ -3698,7 +3698,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile
 from faster_whisper import WhisperModel
 
-MODEL_ID = os.environ.get("STT_MODEL", "Systran/faster-distil-whisper-large-v3")
+MODEL_ID = os.environ.get("STT_MODEL", "large-v3-turbo")
 LANGUAGE = os.environ.get("STT_LANGUAGE", "en")          # "auto" → detect (multilingual models only)
 COMPUTE = os.environ.get("STT_COMPUTE_TYPE", "int8_float16")
 BEAM = int(os.environ.get("STT_BEAM_SIZE", "2"))          # 1–2 for latency; 5 for accuracy
@@ -3808,7 +3808,7 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-Environment=STT_MODEL=Systran/faster-distil-whisper-large-v3
+Environment=STT_MODEL=large-v3-turbo
 Environment=STT_LANGUAGE=en
 Environment=STT_COMPUTE_TYPE=int8_float16
 Environment=STT_BEAM_SIZE=2
@@ -3938,6 +3938,40 @@ If the mic records silence, check that Windows Settings → Privacy → Micropho
 pactl load-module module-echo-cancel aec_method=webrtc source_name=vedha_ec_src sink_name=vedha_ec_sink || echo "not permitted on WSLg — use a headset"
 ```
 
+**12.10a — Integrated gaming mode**
+
+```bash
+cat > /srv/vedha/ops/bin/vedha-game-mode <<'VEDHA_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+. /srv/vedha/vedha-env.sh
+STATE="$VEDHA_GAME_MODE_STATE"
+case "${1:-status}" in
+  on)
+    printf "%s\n" on > "$STATE"
+    systemctl --user stop hermes-stt.service 2>/dev/null || true
+    docker compose -f "$VEDHA_ROOT/ops/compose/kokoro.yaml" stop 2>/dev/null || true
+    echo "Gaming mode ON: STT and Kokoro stopped; gateway remains available."
+    ;;
+  off)
+    rm -f "$STATE"
+    systemctl --user start hermes-stt.service 2>/dev/null || true
+    docker compose -f "$VEDHA_ROOT/ops/compose/kokoro.yaml" start 2>/dev/null || true
+    echo "Gaming mode OFF: voice services restored."
+    ;;
+  status)
+    [[ -f "$STATE" ]] && echo "gaming-mode=ON" || echo "gaming-mode=OFF"
+    echo "STT: $(systemctl --user is-active hermes-stt.service 2>/dev/null || true)"
+    echo "Kokoro: $(docker ps --format '{{.Status}}' --filter name=kokoro 2>/dev/null || true)"
+    ;;
+  *) echo "Usage: vedha-game-mode {on|off|status}" >&2; exit 2 ;;
+esac
+VEDHA_EOF
+chmod 755 /srv/vedha/ops/bin/vedha-game-mode
+vedha-game-mode status
+```
+
+While gaming mode is on, health should report stopped voice services as intentional degraded state rather than alerting.
 **12.10 — Latency measurement**
 ```bash
 espeak-ng -w /srv/vedha/tmp/lat.wav "What time is it in London right now"
