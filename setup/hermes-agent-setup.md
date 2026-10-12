@@ -2190,120 +2190,183 @@ Previous versions are in `state/persona-history/<timestamp>/` and in git history
 ---
 
 ---
-## Stage 4.5 — Long-Term Memory, Semantic Recall & External Provider
+
+## Stage 4.5 — Long-Term Memory, Semantic Recall, Memory Defense & External Provider
 
 ### Prerequisites
-```text
+`
 [ ] Stage 4 complete and built-in memory tests pass
 [ ] Stage 11 alerting recommended before unattended provider jobs
-```
+`
 
 ### Objective
-Add a long-term semantic layer without replacing Hermes native memory, session history, or the learning journey. V3 canonical provider: **Hindsight Local Embedded** after Stage 4 passes. Only one external memory provider may be active.
+Add a semantic long-term memory layer without confusing memory with learning. Hermes native USER.md/MEMORY.md remain the compact hot-memory layer; Hermes session search remains exact episodic recall; hermes journey remains the learning-event timeline; Hindsight adds semantic/entity-aware retrieval and reflection. Stage 15 adds the structured user model and experience/outcome layer that turns those stores into controlled learning.
 
-Hermes v0.21.6 already provides USER.md/MEMORY.md, session_search over SQLite FTS5, hermes journey, and agent-managed skills. Hindsight adds semantic/entity-aware recall and reflection across many sessions.
+### Memory routing policy
 
-### Provider decision tree
-
-| Need | Choice | V3 policy |
+| Information | Canonical home | Why |
 |---|---|---|
-| Best overall personal recall | **Hindsight Local Embedded** | Canonical after Stage 4 validation |
-| Deep user-model/dialectic behavior | Honcho self-hosted | Alternative; one provider at a time |
-| Strictly local/no extra service | Holographic | Alternative |
-| Large structured knowledge | OpenViking | Later option |
-| Cloud memory | Any cloud provider | Not part of baseline |
+| Stable explicit user facts | USER.md | Tiny, always injected |
+| Small durable notes / current conventions | MEMORY.md | Hot memory, bounded |
+| Exact historical event | Hermes session database + session_search | Precise episodic recall |
+| Cross-session semantic/entity knowledge | Hindsight | Paraphrase/entity recall and reflection |
+| How Veda understands the user | state/growth/user-model.md | Evidence-backed user model, not raw memory |
+| What happened during important tasks | state/growth/experience.db | Outcome/lesson history |
+| Reusable procedures | Hermes skills | Procedural memory |
+| Stable identity/personality principles | SOUL.md + stable self-model | Must not drift silently |
+| Adaptive expression style | state/growth/personality-state.yaml | Governed personality adaptation |
+| Current goals / initiatives / presence | state/growth/world/ | Current state, not biography |
+
+Never promote every retrieval into hot memory:
+
+`
+conversation
+   ↓
+candidate observation
+   ↓
+classify + privacy gate + confidence
+   ↓
+episodic/session context
+   ↓
+semantic memory (Hindsight) when durable
+   ↓
+user-model / experience / skill proposal when it changes behavior
+   ↓
+approval + verification
+   ↓
+future behavior
+`
 
 ### 4.5.1 — Install Hindsight
 
-```bash
+`
 hermes plugins install hindsight
 hermes plugins list | grep -i hindsight
 hermes memory setup
 hermes memory status
-```
+`
 
-Choose Hindsight and Local Embedded where offered **[VERIFY]**. Do not invent plugin-specific keys if the installed wizard uses a different schema.
+Choose Hindsight Local Embedded where offered [VERIFY]. Do not invent plugin-specific keys if the installed wizard exposes a different schema. Keep only one external memory provider active.
 
-> **Lazy-dependency note:** Local Embedded may install Hindsight runtime dependencies on first use. Hermes gates this with `security.allow_lazy_installs` (default true). If you deliberately disabled lazy installs, use the supported Hermes plugin/package path or leave Hindsight disabled; do not introduce arbitrary `pip install` behavior. **[VERIFY]**
+### 4.5.2 — Hindsight retention mission
 
-### 4.5.2 — Canonical provider policy
+Where the installed provider supports a retention mission/configuration, set the mission to retain only durable personal-assistant knowledge:
 
-Where supported by the installed plugin:
+`
+Retain information that improves long-term usefulness:
+- explicit user preferences and communication preferences
+- recurring habits and workflows
+- long-term goals and project decisions
+- technical environment facts and stable project context
+- important people/entities and relationships when genuinely useful
+- explicit corrections and durable lessons
+- successful problem-solving patterns worth reusing
 
-```text
-mode=local_embedded
-memory_mode=hybrid
-auto_retain=true
-auto_recall=true
-retain_async=true
-recall_budget=mid
-```
+Do not retain:
+- greetings, filler, transient conversation noise
+- credentials, API keys, passwords, private keys or credential recovery clues
+- employer/client confidential material
+- one-off values without expiry
+- speculative inferences presented as facts
+- raw tool output unless it contains durable knowledge
+`
 
-Record provider/plugin version, storage path, retention behavior, any LLM backend and monthly cost.
+Record the actual mission/configuration in ops/docs/validation-ledger.md.
 
-### 4.5.3 — Semantic recall smoke test
+### 4.5.3 — Hindsight Memory Defense
 
-1. Store a disposable preference.
-2. Start a fresh session.
-3. Ask for it with different wording.
-4. Verify semantic recall.
-5. Forget it.
-6. Verify the paraphrased query no longer returns it.
+If the installed Hindsight version provides Memory Defense, redact/block policies, or an equivalent storage-side defense, enable it and configure it to:
+- block credential-like secrets;
+- redact sensitive/PII classes you do not want retained;
+- treat prompt-injection instructions as untrusted content, not memory directives.
 
-Also test secret-like values and injected instructions; they must not become trusted memory.
+Do not rely on prompt instructions alone. Storage-side defense is a second boundary. Record the enabled policy names and version in the validation ledger.
 
-### 4.5.4 — Honcho alternative
+If the installed provider does not expose Memory Defense, keep it enabled only after the Stage 4 secret-memory test, provider-store inspection, and a documented residual-risk decision.
 
-Honcho is preferable when deep user/AI relationship modeling and dialectic context matter more than raw recall.
+### 4.5.4 — Resource measurement on the 24 GB host
 
-```bash
-hermes plugins install honcho
-hermes memory setup
-hermes memory status
-```
+Before enabling unattended semantic recall:
 
-Use self-hosting for privacy. Do not enable Honcho and Hindsight together.
+`
+free -h
+ps -eo pid,rss,cmd --sort=-rss | head -20
+systemctl --user --no-pager --full status hermes-gateway
+du -sh /srv/vedha/state /srv/vedha/hermes 2>/dev/null || true
+`
 
-### 4.5.5 — Source-of-truth rule
+After at least 20 retain/recall operations, repeat the measurements and record:
+- resident RAM;
+- on-disk growth;
+- CPU during retain/recall;
+- whether a background process remains resident;
+- whether any LLM/embedding calls leave the machine.
 
-Never promote every retrieved fact into MEMORY.md:
+Do not assume a fixed RAM number from documentation. Your measured build is authoritative.
 
-```text
-session history
-    ↓
-semantic memory
-    ↓
-candidate insight
-    ↓
-confidence + privacy + usefulness gate
-    ↓
-USER.md / MEMORY.md only when genuinely hot
-```
+### 4.5.5 — Semantic recall smoke test
+
+Perform all of these in order:
+1. Store a unique disposable fact through the normal approved memory path.
+2. Confirm hermes memory status shows Hindsight enabled and only one external provider.
+3. Confirm built-in USER.md/MEMORY.md still work in a fresh session.
+4. Start a fresh session and retrieve the fact with substantially different wording.
+5. Test exact historical recall through session_search.
+6. Forget/delete the test fact and repeat the paraphrased query.
+7. Confirm it is absent from Hindsight/provider storage and no ghost result appears.
+8. Attempt a fake secret and an injection fixture; confirm neither becomes trusted memory.
+
+### 4.5.6 — Advanced dual-track note
+
+Hermes should normally have one active external provider. Do not enable Hindsight + Honcho simultaneously just because they have complementary strengths.
+
+A future architecture experiment could split:
+- Hindsight = durable fact/entity/semantic recall;
+- Honcho = dialectic relationship/user-model context.
+
+That requires a separate aggregator and privacy review and is not part of the V4 baseline.
+
+### 4.5.7 — Data portability
+
+Treat the Hindsight bank as a separate data asset. Before switching providers:
+1. export/archive the provider-supported bank/records using the installed provider documentation;
+2. preserve the export in an encrypted backup;
+3. record the provider version/schema;
+4. validate a sample of memories after migration;
+5. keep the original bank until recall + forget tests pass on the new provider.
+
+Do not assume a one-click Hindsight → Honcho migration exists on your build.
 
 ### Verification / Testing
-
-Run `hermes memory status`, a fresh-session semantic recall test, a forget/delete test, and the provider storage/cost check. Record [VERIFY] results in Appendix J.
+Run hermes memory status, the full semantic recall/forget sequence, session_search, hermes journey --json, provider storage inspection, Memory Defense inspection if available, and resource measurements. Record [VERIFY] results in Appendix J.
 
 ### Expected result
+Veda has three recall modes:
+- compact hot memory;
+- exact episodic history;
+- semantic/entity-aware long-term recall.
 
-Fresh sessions semantically recall durable information while built-in hot memory and exact `session_search` remain available.
+None of them automatically rewrites the user model, personality or autonomy level.
 
 ### Troubleshooting
-
-If the provider is unavailable or recall is noisy, disable it and fall back to built-in memory + `session_search`. Do not let a provider outage silently reroute the LLM.
+If semantic recall is noisy, disable Hindsight and keep built-in memory + session_search. Do not silently reroute the LLM. If provider RAM/CPU is materially higher than expected, keep it manual until measured bounds fit Appendix L.
 
 ### Rollback / recovery
-
-Use `hermes memory off`, preserve provider data until you decide what to retain, and record the change in `veda-changes.md`.
+Use hermes memory off, preserve provider data until migration/retention decisions are complete, and record the change in veda-changes.md.
 
 ### Completion checklist
-```text
+`
 [ ] Stage 4 memory tests passed first
 [ ] Hindsight active OR documented alternative selected
+[ ] retain mission recorded
+[ ] Memory Defense enabled or residual risk explicitly documented
 [ ] semantic recall + forget tests passed
+[ ] exact session_search recall tested
 [ ] provider storage/cost recorded
+[ ] RAM/CPU/on-disk measurements recorded
 [ ] no second external provider active
-```
+[ ] portability/export procedure documented
+`
 
 ---
 ## Stage 5 — Web Research & Prompt-Injection/Exfiltration Hardening
