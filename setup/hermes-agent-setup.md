@@ -4500,7 +4500,8 @@ fi
 
 ### Completion checklist
 ```text
-[ ] D1–D30 executed and recorded in ops/docs/drills.md (or explicitly N/A with reason)
+[ ] D1–D18 and D21–D34 executed and recorded in ops/docs/drills.md (or explicitly N/A with reason)
+[ ] D19 update rollback and D20 restore drill executed after Final
 [ ] Every drill reverted (Revert column) before the next one
 [ ] Every failing drill fixed or accepted with a documented reason
 ```
@@ -5695,7 +5696,16 @@ Record D19/D20 in `ops/docs/drills.md` and repeat them after future changes to t
 | Auxiliary | `z-ai/glm-5.3-flash` | OpenRouter → CoreWeave only | `12-auxiliary` | Titles, compression, vision, memory rewrite, approvals, MCP, **voice_chat**, etc. |
 | STT | `large-v3-turbo` multilingual default, English-only distil alternative | Local CUDA | `hermes-stt.service`, `120-voice` | Speech recognition |
 | TTS | Kokoro-82M via Kokoro-FastAPI | Local Docker (GPU or CPU) | `compose/kokoro.yaml`, `120-voice` | Speech synthesis |
-| Hot memory | `USER.md` + `MEMORY.md` | Hermes built-in memory | Stage 4 | Compact always-on personal facts |\n| Episodic recall | `session_search` / FTS5 + session database | Local | Stage 4/15 | Exact historical recall |\n| Semantic memory | Hindsight Local Embedded (default) | Local provider | Stage 4.5 | Cross-session semantic/entity recall |\n| User-model alternative | Honcho self-hosted | Local/service | Stage 4.5 | Deep relationship/dialectic context |\n| Self-model | `VEDA-SELF-MODEL.md` | Version-controlled ops repo | Stage 15 | Evolving relationship model without SOUL drift |\n| Growth state | feedback/proposals/world/goals/initiatives | `/srv/vedha/state/growth/` | Stage 15 | Governed adaptation and proactive planning |
+| Hot memory | `USER.md` + `MEMORY.md` | Hermes built-in memory | Stage 4 | Compact always-on personal facts |
+| Episodic recall | `session_search` / FTS5 + session database | Local | Stage 4/15 | Exact historical recall |
+| Semantic memory | Hindsight Local Embedded (default) | Local provider | Stage 4.5 | Cross-session semantic/entity recall |
+| User model | `state/growth/user-model.md` | Local structured state | Stage 15 | Evidence-backed understanding of the user |
+| User-model alternative | Honcho self-hosted | Local/service | Stage 4.5 | Advanced dialectic context; not baseline |
+| Stable self-model | `VEDA-SELF-MODEL.md` | Version-controlled ops repo | Stage 15 | Stable identity and principles |
+| Learned operating model | `state/growth/operating-model.md` | Local structured state | Stage 15 | Reliability and interaction lessons |
+| Experience | `state/growth/experience.db` | Local SQLite | Stage 15 | Outcomes, corrections, skill metrics and audit traces |
+| Personality state | `state/growth/personality-state.yaml` | Local structured state | Stage 15 | Controlled adaptive expression |
+| Growth state | feedback/proposals/world/goals/initiatives | `/srv/vedha/state/growth/` | Stage 15 | Governed adaptation and proactive planning |
 
 Context limits, capabilities, latency, availability and prices change. The live OpenRouter model pages and `vedha-endpoint-check` snapshots are authoritative at deployment time:
 - https://openrouter.ai/z-ai/glm-5.3-flash
@@ -6383,7 +6393,7 @@ Every finding of the offline audit has been applied. IDs refer to the audit repo
 - `vedha-health` (every 15 min plus a daily deep check) and `vedha-alert` (Telegram Bot API, deduplicated, recovery notices).
 - Logrotate timer and bounded journald.
 - Secret-rotation procedure and a break-glass procedure.
-- Failure-mode drills D1–D24.
+- Failure-mode drills D1–D18 and D21–D34, with D19/D20 after Final.
 - Ops git repo with ledgers: validation, aux-audit, drills, integrations, break-glass.
 
 ### v2.1.1: consistency, recovery, and guide-validation corrections
@@ -6664,4 +6674,4 @@ On Windows, run the validator in an environment with `pwsh` installed so the Pow
 
 ---
 
-*Guide revision V3 — major architecture upgrade over V2.2. Architecture: Hermes Agent v0.21.6 (`2026-10-08`, commit `818c13be1dc4fd28987e1e881a9408224afd4535`, verify per Appendix J); GLM-5.3-Flash primary and DeepSeek V4.1 Flash delegated via OpenRouter, CoreWeave-only including auxiliary routes; WSL distro on F: with state on ext4; air-gapped, inspected Docker sandbox; size-bounded persona and memory; single-supervisor gateway with real-reboot survival; LLM-independent health alerting; local STT/TTS with a voice-mode style and latency budget; encrypted backups, restore drill, and blue/green updates.*
+*Guide revision V4 — adaptive personal-intelligence architecture over V3. Architecture: Hermes Agent v0.21.6 (`2026-10-08`, commit `818c13be1dc4fd28987e1e881a9408224afd4535`, verify per Appendix J); GLM-5.3-Flash primary and DeepSeek V4.1 Flash delegated via OpenRouter, CoreWeave-only including auxiliary routes; WSL distro on F: with state on ext4; air-gapped, inspected Docker sandbox; size-bounded persona and memory; single-supervisor gateway with real-reboot survival; LLM-independent health alerting; local STT/TTS with a voice-mode style and latency budget; encrypted backups, restore drill, and blue/green updates.*
