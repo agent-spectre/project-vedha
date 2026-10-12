@@ -6198,6 +6198,23 @@ Lives in `ops/docs/validation-ledger.md` and in each backup's `MANIFEST.txt`. It
 
 ## Appendix K — Changelog and Validation Record
 
+### V4.0 — Adaptive personal-intelligence architecture
+
+| ID | Change | Where |
+|---|---|---|
+| V4-01 | Separated hot memory, episodic recall, semantic memory, user model, experience, skills, personality state and world state | Architecture, Stages 4.5/15 |
+| V4-02 | Added evidence-backed user model with confidence, evidence, supersession and expiry | Stage 15 |
+| V4-03 | Added SQLite experience/outcome ledger, feedback, corrections, skill metrics, decision traces, evaluations and trust changes | Stage 15 |
+| V4-04 | Added governed adaptive personality state separated from stable SOUL/self-model | Stage 15 |
+| V4-05 | Added host-side proposal inbox and deterministic growth helper so protected growth state is not writable from the Docker sandbox | Stage 15 |
+| V4-06 | Added progressive trust ladder and explicit interruptibility contract | Stage 13/15 |
+| V4-07 | Added session hygiene, current-focus handoff, unknowns surface, decision-audit mode and memory/skill decay review | Stages 11/13/15 |
+| V4-08 | Added Hindsight retention mission, Memory Defense guidance, semantic recall/forget/resource/portability checks | Stage 4.5 |
+| V4-09 | Added Docker disk-image lock migration procedure, strict NAT baseline and measured ext4 mount-option guidance | Stage 0 |
+| V4-10 | Extended RAM/VRAM concurrency monitoring, voice latency budgets, presence states and cost soft-budget guidance | Stages 11/12/16, Appendix L |
+| V4-11 | Added personal-data boundary checklist and versioned persona snapshot policy | Appendix B, Stage 15 |
+| V4-12 | Corrected stale drill/final checklists, hardware wording, escaped-newline artifacts and broadened guide validator | Stage 14/Final/Appendix A/M |
+
 ### V3.0.1 — Hermes v0.21.6 release integration
 
 | ID | Change | Where |
@@ -6437,9 +6454,10 @@ Retune after measuring the real workload. Keep enough RAM available to Windows f
 | Sandbox container | ≤ 4 GB | `container_memory: 4096` |
 | STT service | 1.5–3 GB | `MemoryMax=4G`, `OOMScoreAdjust=500` |
 | Kokoro GPU | ~1–3 GB | `mem_limit: 3g`, `oom_score_adj=500` |
-| Hindsight/provider process | measure on this build | keep local and bounded |
+| Hindsight/provider process | Measure after at least 20 retain/recall operations; record resident RAM, CPU, DB growth and background residency | Keep local and bounded; disable unattended use if it materially threatens the 16 GB WSL budget |
 | **Typical WSL load** | **~10–14 GB** | `.wslconfig memory=16GB` starting point |
 | **Peak target** | **≤15 GB sustained** | keep ~1 GB WSL headroom; use swap for short spikes |
+| **Concurrency test** | Maven + STT + Kokoro + gateway | Must pass without unacceptable OOM or swap thrash; measure rather than assume |
 
 Do not run a high-end local LLM simply because the RTX 3060 has 12 GB VRAM. The V3 primary brain remains cloud-hosted; the GPU is used for STT, TTS and future local embedding/vision experiments.
 
