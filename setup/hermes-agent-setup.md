@@ -4199,6 +4199,14 @@ Run one text turn and one interactive voice turn, then confirm the voice turn ap
 
 If you later enable cloud live STT, use a separate capped key, document the provider/model/data path, keep the file-path fallback tested, and pass D34 before leaving it enabled.
 **12.10 — Latency measurement**
+Use three voice budgets on this hardware:
+- wake-to-first-audio: target ≤ 2.0 s for a short request;
+- speech-end-to-first-token: target ≤ 1.5 s once the CLI session is warm;
+- speech-end-to-first-spoken-word: target ≤ 3.0 s end-to-end for a short request.
+
+Record p50 and p95, not only one best case. A budget miss is an optimization signal, not permission to add an unreviewed cloud fallback.
+
+Voice personality is intentionally distinct from text: shorter turns, explicit confirmation before side effects, conversational acknowledgement while waiting, and immediate stop on barge-in.
 ```bash
 espeak-ng -w /srv/vedha/tmp/lat.wav "What time is it in London right now"
 s=$(date +%s.%N); /srv/vedha/runtime/voice-venv/bin/python /srv/vedha/services/stt/client.py /srv/vedha/tmp/lat.wav /srv/vedha/tmp/lat.txt; e=$(date +%s.%N)
@@ -4231,6 +4239,10 @@ In a session: `/wake status`, `/wake on`, `/wake off` **[VERIFY row 37]**. Wake 
 
 **12.12 — Barge-in**
 Start a long spoken answer and talk over it. Speech must stop promptly. Then run the same test **without** a headset, to confirm Veda doesn't interrupt itself.
+Record stop latency. Voice barge-in is the highest-priority interrupt and must preempt speech immediately.
+
+**12.12a — Local presence indicator**
+If Stage 16 is enabled, expose these status states: idle, listening, thinking, speaking, busy/tool, gaming, degraded, offline. The indicator is status-only, not a security boundary. Quiet hours suppress proactive spoken announcements unless explicitly critical.
 
 **12.13 — Telegram voice notes (if Stage 9)**
 Send a voice note to the bot. Expected: transcribed locally, answered in spoken style, and returned as a voice bubble. Hermes converts with ffmpeg **[VERIFY]**.
@@ -4246,7 +4258,9 @@ Send a voice note to the bot. Expected: transcribed locally, answered in spoken 
 
 ### Performance notes
 - RTX 3060 12 GB (Turing, CC 7.5) supports `int8_float16`. If you hit OOM, try `int8` and measure the quality and latency difference.
-- Rough VRAM: distil-large-v3 int8 ≈ 1–1.5 GB, Kokoro GPU ≈ 1–2 GB, Windows desktop ≈ 0.5–1 GB of the 6 GB. Running Kokoro on CPU frees GPU headroom.
+- Rough VRAM: distil-large-v3 int8 ≈ 1–1.5 GB, Kokoro GPU ≈ 1–2 GB. The RTX 3060 target is 12 GB; measure actual Windows/game/voice usage with nvidia-smi.
+- WSL RAM is capped at 16 GB in the baseline. Treat simultaneous Maven/JVM + STT + Kokoro as a deliberate load test, not an assumption; vedha-health --deep must remain clean.
+- Heavy Maven builds can consume several GB by themselves. Keep sandbox JVM memory bounded and use vedha-game-mode before gaming.
 - Keep the model resident. Never load it per utterance.
 - Keep the STT service bound to `127.0.0.1` with uploads size-limited (25 MB in `server.py`).
 - A working Telegram voice round trip does **not** prove the WSL microphone path works; they're different ways in. Test each one you use.
