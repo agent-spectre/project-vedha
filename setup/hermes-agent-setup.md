@@ -3689,6 +3689,7 @@ vedha-cost-report
 | Long-running chat sessions | Telegram sessions keep accumulating context, so start a fresh session when the topic changes (`/new` or `/reset` **[VERIFY]**). Compare equivalent prompts and context sizes before concluding that one interface costs more. |
 | Retries | Retries after transient failures are billed. Watch for retry storms in the logs. |
 | Measurement | `/usage`, `hermes prompt-size` **[VERIFY]**, Activity. Use these, never a static price table, because pricing changes. |
+| Soft budget alert | Example: set VEDHA_SOFT_DAILY_COST_USD=2.00 and VEDHA_SOFT_WEEKLY_COST_USD=10.00 in vedha-env.sh; WARN above the threshold; never silently change provider/routing. |
 
 ### 11.10a — vedha-status
 
@@ -4414,7 +4415,7 @@ Spoken proactive announcements follow the same interruption policy as Telegram a
 Run interruption tests, trust-boundary tests, one tiny presence ritual, morning briefing, daily digest, weekly learning review, unknowns query and decay review. Record cost and observable state for each.
 
 ### Completion checklist
-`
+```text
 [ ] interruption contract tested
 [ ] T0/T1 baseline enforced
 [ ] any raised trust level has an explicit change-control entry
@@ -4426,7 +4427,7 @@ Run interruption tests, trust-boundary tests, one tiny presence ritual, morning 
 [ ] "what I still don't know" works
 [ ] decay review is proposal-only
 [ ] quiet-hours and voice interruption rules tested
-`
+```
 
 ---
 ## Stage 14 — Failure-Mode Drills
@@ -5727,6 +5728,17 @@ Gemini is not part of this architecture. (`gemini-2.0-flash` and `-flash-lite` w
 ---
 
 ## Appendix B — Consolidated Do's and Don'ts
+
+**Personal data boundary — review monthly**
+```text
+[ ] Never place employer/client code, logs, credentials or confidential material in Vedha
+[ ] Never store passwords, API keys, private keys, banking data or 2FA seeds in USER/MEMORY/Hindsight
+[ ] Review USER.md, MEMORY.md and semantic-memory retention for accidental sensitive material
+[ ] Keep Telegram/OpenRouter/web/MCP tokens in the secret store only
+[ ] Rotate credentials on suspicion and after an exposed backup key
+[ ] Keep backup private keys off-machine
+[ ] Treat screenshots, voice recordings and Windows presence telemetry as data with an explicit retention decision
+```
 
 **Do**
 - Run multi-step procedures as `vedha-*` scripts. Paste only the file-creation heredocs.
