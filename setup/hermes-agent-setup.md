@@ -2194,10 +2194,10 @@ Previous versions are in `state/persona-history/<timestamp>/` and in git history
 ## Stage 4.5 — Long-Term Memory, Semantic Recall, Memory Defense & External Provider
 
 ### Prerequisites
-`
+```
 [ ] Stage 4 complete and built-in memory tests pass
 [ ] Stage 11 alerting recommended before unattended provider jobs
-`
+```
 
 ### Objective
 Add a semantic long-term memory layer without confusing memory with learning. Hermes native USER.md/MEMORY.md remain the compact hot-memory layer; Hermes session search remains exact episodic recall; hermes journey remains the learning-event timeline; Hindsight adds semantic/entity-aware retrieval and reflection. Stage 15 adds the structured user model and experience/outcome layer that turns those stores into controlled learning.
@@ -2219,7 +2219,7 @@ Add a semantic long-term memory layer without confusing memory with learning. He
 
 Never promote every retrieval into hot memory:
 
-`
+```
 conversation
    ↓
 candidate observation
@@ -2235,16 +2235,16 @@ user-model / experience / skill proposal when it changes behavior
 approval + verification
    ↓
 future behavior
-`
+```
 
 ### 4.5.1 — Install Hindsight
 
-`
+```
 hermes plugins install hindsight
 hermes plugins list | grep -i hindsight
 hermes memory setup
 hermes memory status
-`
+```
 
 Choose Hindsight Local Embedded where offered [VERIFY]. Do not invent plugin-specific keys if the installed wizard exposes a different schema. Keep only one external memory provider active.
 
@@ -2252,7 +2252,7 @@ Choose Hindsight Local Embedded where offered [VERIFY]. Do not invent plugin-spe
 
 Where the installed provider supports a retention mission/configuration, set the mission to retain only durable personal-assistant knowledge:
 
-`
+```
 Retain information that improves long-term usefulness:
 - explicit user preferences and communication preferences
 - recurring habits and workflows
@@ -2269,7 +2269,7 @@ Do not retain:
 - one-off values without expiry
 - speculative inferences presented as facts
 - raw tool output unless it contains durable knowledge
-`
+```
 
 Record the actual mission/configuration in ops/docs/validation-ledger.md.
 
@@ -2288,12 +2288,12 @@ If the installed provider does not expose Memory Defense, keep it enabled only a
 
 Before enabling unattended semantic recall:
 
-`
+```
 free -h
 ps -eo pid,rss,cmd --sort=-rss | head -20
 systemctl --user --no-pager --full status hermes-gateway
 du -sh /srv/vedha/state /srv/vedha/hermes 2>/dev/null || true
-`
+```
 
 After at least 20 retain/recall operations, repeat the measurements and record:
 - resident RAM;
@@ -2355,7 +2355,7 @@ If semantic recall is noisy, disable Hindsight and keep built-in memory + sessio
 Use hermes memory off, preserve provider data until migration/retention decisions are complete, and record the change in veda-changes.md.
 
 ### Completion checklist
-`
+```
 [ ] Stage 4 memory tests passed first
 [ ] Hindsight active OR documented alternative selected
 [ ] retain mission recorded
@@ -2366,7 +2366,7 @@ Use hermes memory off, preserve provider data until migration/retention decision
 [ ] RAM/CPU/on-disk measurements recorded
 [ ] no second external provider active
 [ ] portability/export procedure documented
-`
+```
 
 ---
 ## Stage 5 — Web Research & Prompt-Injection/Exfiltration Hardening
@@ -4522,11 +4522,11 @@ Turn Veda from "an assistant with memory" into a controlled long-term personal s
 
 The learning loop is:
 
-`
+```
 observe → retrieve → act → record outcome → evaluate → reflect
         → propose → approve → apply → verify → measure improvement
         → repeat
-`
+```
 
 The model weights do not need to change. Veda learns through structured memory, a user model, episodic experience, procedural skills, adaptive personality state, goals/world state, and evidence-backed evaluation.
 
@@ -4606,7 +4606,7 @@ Create:
 
 Keep the core personality in SOUL.md and put only adaptive expression state here.
 
-`
+```
 traits:
   humor: 0.30
   warmth: 0.50
@@ -4624,7 +4624,7 @@ evidence:
 
 last_review:
 next_review:
-`
+```
 
 Personality state may influence style only. It can never override system/safety policy, trust boundaries or an explicit current instruction.
 
@@ -4636,7 +4636,7 @@ Create:
 
 Initialize SQLite:
 
-`
+```
 sqlite3 /srv/vedha/state/growth/experience.db <<'SQL'
 PRAGMA journal_mode=WAL;
 
@@ -4765,7 +4765,7 @@ PRAGMA user_version=1;
 SQL
 
 sqlite3 /srv/vedha/state/growth/experience.db 'PRAGMA integrity_check;'
-`
+```
 
 This is an experience ledger, not a second raw transcript store. Store concise summaries, corrections, outcomes, lessons and evidence references instead of full conversations.
 
@@ -4779,18 +4779,18 @@ Create a proposal inbox inside the existing workspace:
 
 Create the protected state directories:
 
-`
+```
 mkdir -p /srv/vedha/state/growth/proposals /srv/vedha/state/growth/metrics /srv/vedha/state/growth/persona-snapshots /srv/vedha/state/growth/world
 mkdir -p /srv/vedha/workspace/.vedha/proposals
 chmod 700 /srv/vedha/state/growth
 chmod 700 /srv/vedha/workspace/.vedha/proposals
-`
+```
 
 Veda may propose a JSON/YAML change in the workspace inbox. A host-side review/import step validates it before any protected state changes.
 
 Recommended proposal envelope:
 
-`
+```
 type: user_model | memory | skill | personality | goal | workflow
 claim: "<what should change>"
 evidence:
@@ -4801,7 +4801,7 @@ destination: USER.md | MEMORY.md | hindsight | user-model | skill | personality 
 action: add | replace | supersede | expire | archive | reject
 reason: "<why this improves future behavior>"
 rollback: "<how to undo it>"
-`
+```
 
 Credential-adjacent proposals are rejected by the deterministic validator and never imported.
 
@@ -4809,7 +4809,7 @@ Credential-adjacent proposals are rejected by the deterministic validator and ne
 
 Create:
 
-`
+```
 cat > /srv/vedha/ops/bin/vedha-growth <<'VEDHA_EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -4858,7 +4858,7 @@ case "$1" in
 esac
 VEDHA_EOF
 chmod 755 /srv/vedha/ops/bin/vedha-growth
-`
+```
 
 The helper is deterministic. It does not call an LLM, raise trust, modify SOUL.md or auto-import proposals.
 
@@ -4866,7 +4866,7 @@ The helper is deterministic. It does not call an LLM, raise trust, modify SOUL.m
 
 After every substantive task, classify:
 
-`
+```
 goal
 → plan
 → actions
@@ -4874,7 +4874,7 @@ goal
 → user correction / feedback
 → lesson
 → proposal
-`
+```
 
 A successful process exit does not equal a successful task. Verify the user-visible outcome.
 
@@ -4882,14 +4882,14 @@ A successful process exit does not equal a successful task. Verify the user-visi
 
 Normalize explicit feedback:
 
-`
+```
 feedback: good
 feedback: wrong because ...
 feedback: too verbose
 feedback: too cautious
 feedback: missed ...
 feedback: remember ...
-`
+```
 
 Classify each correction as factual knowledge, reasoning/decision, user preference, communication style, safety/trust boundary, project/workflow or skill/procedure.
 
@@ -4916,7 +4916,7 @@ Every important learned skill records:
 
 Example:
 
-`
+```
 skill: java-offline-maven-build
 attempts: 23
 successes: 21
@@ -4927,7 +4927,7 @@ last_verified: 2026-10-10
 confidence: high
 known_failure_modes:
   - missing_maven_artifact
-`
+```
 
 Decay:
 - unused 60–90 days → candidate for archive;
@@ -4986,7 +4986,7 @@ For important projects create:
 
 Create:
 
-`
+```
 cat > /srv/vedha/state/growth/world/current.md <<'VEDHA_EOF'
 # Current world state
 Last updated:
@@ -5029,7 +5029,7 @@ approved_scopes:
 change_control_required: true
 last_changed:
 VEDHA_EOF
-`
+```
 
 ### 15.14 — Situational state and local presence
 
@@ -5158,7 +5158,7 @@ Veda can improve behavior over time without changing model weights: remember wha
 Reject proposals, restore the latest persona snapshot, revert veda-changes.md, restore experience.db from backup if corrupted, lower trust level, disable background review, disable Hindsight if semantic recall is noisy, and rerun the regression suite before resuming higher autonomy.
 
 ### Completion checklist
-`
+```
 [ ] veda-changes.md active
 [ ] stable self-model and learned operating model separated
 [ ] user-model active with evidence/confidence
@@ -5177,74 +5177,126 @@ Reject proposals, restore the latest persona snapshot, revert veda-changes.md, r
 [ ] daily/weekly/biweekly/monthly cadence documented
 [ ] red-team fixture passed
 [ ] growth invariants reviewed
-`
+```
 
 ---
 ## Stage 16 — Optional Windows Bridge & Local Presence
 
 ### Objective
-Give Veda controlled awareness of Windows without granting an unrestricted remote shell. Disabled by default.
+Give Veda controlled awareness of Windows so the assistant can feel physically present on the PC without granting an unrestricted remote shell.
 
 ### 16.1 — Bridge design
-Bind a small Windows-side service only to 127.0.0.1. Expose explicit allowlisted functions such as get CPU/GPU/RAM usage, get active window, get/set volume, media play/pause, notifications, launch an allowlisted application and screenshot.
+
+Bind a small Windows-side service only to 127.0.0.1. Start with read-only presence signals:
+- active window;
+- foreground process;
+- CPU/RAM;
+- GPU/VRAM/utilization;
+- display/audio state;
+- volume;
+- media playback;
+- idle time;
+- power/battery state;
+- network state;
+- game detection;
+- microphone availability.
+
+Optional reversible actions:
+- volume;
+- media play/pause;
+- local notification;
+- launch an explicitly allowlisted application.
 
 Never expose arbitrary PowerShell, arbitrary process creation, arbitrary filesystem/registry access, browser credentials, shutdown/reboot, firewall/security policy or arbitrary network requests.
 
 ### 16.2 — Host-side execution boundary
 
-**Important:** the Windows bridge is a **host-side capability**, not a Docker-sandbox capability. Do not try to reach it from a network-isolated sandbox container: `127.0.0.1` inside the sandbox is the container itself.
+The Windows bridge is a host-side capability, not a Docker-sandbox capability. Do not try to reach it from a network-isolated sandbox container.
 
-The preferred design is:
+Preferred architecture:
+
 ```text
-Hermes gateway / reviewed host-side MCP adapter (WSL)
+Hermes gateway / reviewed host-side adapter
         │
-        │ loopback / authenticated local hop
+        │ authenticated loopback/local hop
         ▼
 Windows bridge (127.0.0.1:<port>)
+        │
+        └──> presence/state collector
 ```
 
-The bridge must never require `terminal.docker_network=true`. Its tool implementation runs in the trusted Hermes parent/gateway context or another explicitly reviewed host-side process. If the installed Hermes MCP implementation runs the server inside the sandbox, do not enable this bridge until a host-side transport is available.
+The bridge must not require terminal.docker_network=true. If the installed Hermes MCP implementation forces the server into the sandbox, leave this feature disabled until a supported host-side transport exists.
 
-### 16.3 — Authentication
-Require a local secret/token. Keep it outside Git. Telegram Profile A must not have the Windows toolset.
+### 16.3 — Authentication and remote boundaries
+
+Require a local secret/token outside Git. Telegram Profile A must not have the Windows bridge toolset. Unknown actions must be rejected before dispatch.
 
 ### 16.4 — Safety tiers
+
 | Tier | Example | Default |
 |---|---|---|
-| Read-only | GPU/RAM/window status | allowed after validation |
+| Read-only | GPU/RAM/window/status | allowed after validation |
 | Reversible | volume/media/notification | ask or pre-approve |
-| Launch | start IntelliJ | allowlist + ask |
+| Launch | start IntelliJ/game/utility | allowlist + ask |
 | Destructive/system | shutdown, delete, registry, firewall | never exposed |
 
-### 16.5 — Validation
-Verify loopback-only binding, authentication, rejection of unknown actions, negative-test arbitrary command execution, inspect the Windows process/environment, prove Telegram cannot call it and record its version/hash.
+Raising a tier is a Stage 15 trust-level change, not merely a bridge configuration edit.
+
+### 16.5 — Presence state integration
+
+If enabled, Veda derives a compact state file:
+
+    /srv/vedha/state/growth/world/presence.md
+
+Allowed fields:
+- present;
+- foreground app;
+- game mode;
+- CPU/RAM;
+- GPU/VRAM;
+- audio device;
+- volume;
+- idle time;
+- power;
+- network;
+- last update.
+
+Do not retain screenshots or minute-by-minute raw telemetry by default.
 
 ### 16.6 — Cinematic presence
-A tray/HUD can show listening, thinking, speaking, busy, gaming, degraded and offline. It is cosmetic, not a security boundary.
 
-### Verification / Testing
+A tray/HUD can display:
+idle, listening, thinking, speaking, busy/tool, gaming, degraded, offline.
 
-Only after Stages 14–15 pass, test every allowlisted bridge action from a trusted local session. Prove Telegram Profile A cannot call it and run D30.
+A daily status ritual can optionally use this state:
+> "Online. Focus: <current goal>."
 
-### Expected result
+The HUD is cosmetic only.
 
-Read-only Windows awareness works without arbitrary OS control, while the sandbox remains network-isolated.
+### 16.7 — Validation
 
-### Rollback / recovery
-
-Disable the bridge toolset, stop the Windows bridge, revoke its local token, remove its integration entry, and rerun the security drills.
+Verify:
+1. loopback-only binding;
+2. authentication;
+3. rejection of unknown actions;
+4. read-only presence signals;
+5. arbitrary command/file/registry requests rejected;
+6. Telegram cannot call the bridge;
+7. trust-level enforcement;
+8. D30 passes;
+9. bridge version/hash recorded.
 
 ### Completion checklist
-
 ```text
 [ ] loopback-only binding verified
 [ ] authentication verified
+[ ] presence signals validated
 [ ] arbitrary command/file/registry requests rejected
 [ ] Telegram Profile A cannot access bridge
 [ ] D30 passed
 [ ] version/hash recorded
+[ ] presence.md retention policy reviewed
 ```
-
 
 ---
 ## Final Stage — End-to-End Validation, Backup, Restore Drill & Update Procedure
@@ -5252,24 +5304,40 @@ Disable the bridge toolset, stop the Windows bridge, revoke its local token, rem
 ### End-to-end validation (from a clean post-reboot state)
 ```text
 [ ]  1. vedha-preflight and vedha-health --deep: no FAIL
-[ ]  2. New CLI session: model/provider resolution correct (hermes status / config get)
-[ ]  3. File change in /workspace via Hermes, verified on host; ownership repaired
-[ ]  4. Web search with sources and dates
-[ ]  5. One kept skill or MCP integration used end-to-end
-[ ]  6. Delegated coding task; Activity: DeepSeek on CoreWeave (child), GLM on CoreWeave (parent)
+[ ]  2. New CLI session: model/provider resolution correct
+[ ]  3. File round-trip in /workspace verified on host; ownership repaired
+[ ]  4. Web search with sources/dates and injection fixture passes
+[ ]  5. One kept skill or MCP integration works end-to-end
+[ ]  6. Delegated coding task: DeepSeek/CoreWeave child + GLM/CoreWeave parent
 [ ]  7. Java/Maven delegated test passes offline
 [ ]  8. One-shot cron side effect verified; heartbeat fresh
-[ ]  9. Telegram text round trip; **Profile A** is verified (no terminal/code/file/delegation toolsets)
+[ ]  9. Telegram Profile A text round trip and tool boundary verified
 [ ] 10. Telegram voice round trip (if enabled)
-[ ] 11. Local voice round trip with wake word/barge-in (if enabled); latency within budget
-[ ] 12. /agents during a delegated task; /stop interrupts it
-[ ] 13. systemctl --user restart hermes-gateway → Telegram + CLI smoke
+[ ] 11. Local voice round trip + wake word/barge-in (if enabled); latency budget recorded
+[ ] 12. /agents + /stop interruption behavior verified
+[ ] 13. Gateway restart smoke passes
 [ ] 14. Real Windows reboot without opening a terminal → bot replies
-[ ] 15. Docker Desktop restart → next tool call gets a fresh, compliant sandbox (vedha-sandbox-inspect)
-[ ] 16. Morning briefing and daily digest delivered
-[ ] 17. hermes doctor, hermes config check, hermes cron status: OK
-[ ] 18. vedha-pin-negative-test: pin honoured (gateway stopped for it, then started again)
-[ ] 19. Native learning journey + session_search verified\n[ ] 20. Long-term semantic memory verified (or documented alternative)\n[ ] 21. Persona regression suite recorded PASS\n[ ] 22. veda-changes.md and self-model active\n[ ] 23. Safe Docker GC tested; named volumes preserved\n[ ] 24. `vedha-game-mode on/off` tested\n[ ] 25. Telegram Profile A boundary verified\n[ ] 26. hermes doctor, hermes config check, hermes cron status: OK\n[ ] 27. vedha-pin-negative-test: pin honoured; vedha-keycheck clean; health policy invariants PASS\n[ ] 28. D25–D30 growth/remote-security drills passed
+[ ] 15. Docker restart → fresh compliant sandbox verified
+[ ] 16. Morning briefing + daily digest delivered
+[ ] 17. doctor/config/cron status all OK
+[ ] 18. Main + delegated provider pins pass negative tests
+[ ] 19. Auxiliary-route negative test and audit complete
+[ ] 20. Native learning journey + session_search verified
+[ ] 21. Hindsight semantic recall + forget verified
+[ ] 22. Hindsight Memory Defense/retention policy verified or residual risk documented
+[ ] 23. User-model + experience/outcome learning test passed
+[ ] 24. Persona regression suite PASS
+[ ] 25. Personality snapshot + rollback test passed
+[ ] 26. Trust-level boundary tests passed
+[ ] 27. Session handoff/current-focus test passed
+[ ] 28. Skill reliability/decay review test passed
+[ ] 29. "What Veda still doesn't know" and explain-last-decision tests passed
+[ ] 30. Safe Docker GC tested; named volumes preserved
+[ ] 31. vedha-game-mode on/off tested
+[ ] 32. Windows bridge/presence tests passed (if enabled)
+[ ] 33. D1–D18 and D21–D34 passed or explicitly N/A
+[ ] 34. D19 update rollback passed
+[ ] 35. D20 restore drill passed
 ```
 
 ### Acceptance criteria
@@ -5278,7 +5346,7 @@ Disable the bridge toolset, stop the Windows bridge, revoke its local token, rem
 **Gateway and automation:** one gateway; survives a real reboot; unauthorized senders rejected; cron and heartbeat healthy; alerts working.
 **Voice:** STT on CUDA, offline-capable; Kokoro localhost-only; latency recorded; no OOM under concurrency.
 **Recoverability:** encrypted backup exists, is mirrored and has an offsite copy; restore drill PASS; rollback tested.
-**Growth:** session_search, hermes journey, semantic memory, governed reflection, self-model, feedback, persona evaluation and skill approval work together without silent self-modification.
+**Growth:** hot memory, exact episodic recall, semantic memory, evidence-backed user model, experience/outcome learning, governed personality adaptation, skill reliability, goals/world state, trust levels, feedback/evaluation and reversible change control work together without silent self-modification.
 **Remote security:** Telegram Profile A remains the mobile baseline; execution is local unless Stage 16 is separately enabled.
 
 ---
@@ -5608,7 +5676,7 @@ Record D19/D20 in `ops/docs/drills.md` and repeat them after future changes to t
 
 ### Completion checklist
 ```text
-[ ] End-to-end list 1–19 passed
+[ ] End-to-end validation list 1–35 passed or explicitly N/A where a feature is disabled
 [ ] age key created in RAM only; private key stored offline in two places; not on the machine
 [ ] Initial encrypted backup created (includes services/), mirrored to F:, copied offsite
 [ ] Weekly backup timer active; OnFailure alert in place
