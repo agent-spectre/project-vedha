@@ -3529,7 +3529,7 @@ WantedBy=timers.target
 VEDHA_EOF
 
 cat > /srv/vedha/ops/logrotate/vedha.conf <<'VEDHA_EOF'
-/srv/vedha/hermes/logs/*.log /srv/vedha/services/stt/*.log {
+/srv/vedha/hermes/logs/*.log /srv/vedha/services/stt/*.log /srv/vedha/logs/*.log {
     daily
     rotate 14
     maxsize 50M
@@ -3574,6 +3574,8 @@ done
 systemctl --user daemon-reload
 systemctl --user list-timers --no-pager
 systemctl --user start vedha-notify-failure@test.service     # expect a Telegram message "systemd unit FAILED: test"
+mkdir -p /srv/vedha/logs
+# Journald remains canonical for systemd services; /srv/vedha/logs is for helpers that intentionally emit file logs.
 git -C /srv/vedha/ops add -A && git -C /srv/vedha/ops commit -qm "Stage 11: health, alerting, logrotate"
 ```
 Check whether Hermes rotates its own logs **[VERIFY]**. `copytruncate` is safe either way.
