@@ -5376,6 +5376,9 @@ Reject proposals, restore the latest persona snapshot, revert veda-changes.md, r
 [ ] personality-state active and governed
 [ ] experience.db created and integrity checked
 [ ] proposal inbox + deterministic growth helper active
+[ ] `vedha-growth record|feedback|decision|last10` tested
+[ ] `vedha-trust-check` tested fail-closed and PASS cases
+[ ] SOUL precedence over personality-state tested
 [ ] substantive-task outcome capture tested
 [ ] correction routing tested
 [ ] skill reliability metrics tested
@@ -6083,7 +6086,7 @@ Treat official docs and source as authoritative. Community reports are leads unt
 
 ## V0.21.6 Local-Model Break-Glass (Manual, Optional)
 
-Hermes v0.21.6 adds local model support, including llama.cpp CUDA on Linux. With the RTX 3060 12 GB this is useful as an emergency/offline path, but it is **not** configured as a fallback in the V3 baseline.
+Hermes v0.21.6 adds local model support, including llama.cpp CUDA on Linux. With the RTX 3060 12 GB this is useful as an emergency/offline path, but it is **not** configured as a fallback in the V4 baseline.
 
 Policy:
 - normal mode: GLM/DeepSeek through OpenRouter/CoreWeave only;
@@ -6881,6 +6884,26 @@ if 'Hindsight Local Embedded' not in s:
     errors.append('Hindsight policy missing')
 if 'Memory Defense' not in s:
     errors.append('Memory Defense guidance missing')
+if 'Minimum viable growth set vs full adaptive set' not in s:
+    errors.append('MVP/full growth operating modes missing')
+if 'Day-1 / Week-1 / Month-1 operating summary' not in s:
+    errors.append('operating summary missing')
+if '### 15.5a — Experience DB write path and operator queries' not in s:
+    errors.append('experience write-path documentation missing')
+if 'vedha-growth record <episode_id>' not in s:
+    errors.append('experience record operation missing')
+if 'SELECT id, decision, tool, result, created_at' not in s:
+    errors.append('last10 decision query missing')
+if '### 15.1a — Trust enforcement contract' not in s:
+    errors.append('trust enforcement contract missing')
+if '### 15.5b — Deterministic trust gate' not in s:
+    errors.append('deterministic trust gate missing')
+if 'When `SOUL.md` and `personality-state.yaml` conflict, **SOUL.md wins**.' not in s:
+    errors.append('SOUL precedence rule missing')
+if 'Starting pass criteria' not in s or 'idle RSS ≤512 MB' not in s:
+    errors.append('Hindsight hard resource thresholds missing')
+if 'Concrete policy' not in s or '$2/day or $10/week' not in s:
+    errors.append('concrete cost policy missing')
 if 'state/growth/user-model.md' not in s:
     errors.append('user model missing')
 if 'state/growth/experience.db' not in s:
@@ -6899,8 +6922,8 @@ if '### V4.0 — Adaptive personal-intelligence architecture' not in s:
     errors.append('V4 changelog missing')
 if 'Guide revision V4' not in s:
     errors.append('V4 footer/header missing')
-if '**A — V3 baseline**' not in s:
-    errors.append('Telegram Profile A baseline missing')
+if '**A — V4 baseline**' not in s:
+    errors.append('Telegram Profile A V4 baseline missing')
 if 'vedha-game-mode' not in s:
     errors.append('game mode missing')
 if 'vedha-status' not in s or 'vedha-cost-report' not in s:
