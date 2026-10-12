@@ -1,4 +1,4 @@
-# Hermes Agent "Veda" — Staged Implementation Guide (V3)
+# Hermes Agent "Veda" — Staged Implementation Guide (V4)
 
 | | |
 |---|---|
@@ -21,6 +21,69 @@
 
 ---
 
+---
+
+## V4 mental model — keep these layers separate
+
+````text
+                 ┌─────────────────────────┐
+                 │      Veda / Brain       │
+                 │  GLM + tools + skills   │
+                 └────────────┬────────────┘
+                              │
+       ┌──────────────┬───────┼────────┬───────────────┐
+       ▼              ▼       ▼        ▼               ▼
+   USER/MEMORY    Episodes  Hindsight User Model   World / Goals
+       │              │       │        │               │
+       └──────────────┴───────┼────────┴───────────────┘
+                              ▼
+                     Experience / Outcomes
+                              ▼
+                   Proposals + Evaluation
+                              ▼
+               Approved Memory/Skill/Persona
+                              ▼
+                     Future behavior
+
+SOUL.md = constitution
+Personality state = bounded expression
+Trust state = autonomy boundary
+````
+
+The most important separation is:
+- **Memory** answers “what happened / what do we know?”
+- **User model** answers “how do I understand the user's stable preferences?”
+- **Experience** answers “what happened when I acted?”
+- **Skills** answer “how do I perform the task?”
+- **Personality state** answers “how should I express myself?”
+- **Trust state** answers “what am I actually allowed to do?”
+- **SOUL.md** answers “what kind of agent am I regardless of learned adaptation?”
+
+Never collapse these stores into one giant memory file.
+
+## Minimum viable growth set vs full adaptive set
+
+You do not need to activate every V4 subsystem on Day 1.
+
+| Mode | Use when | Required |
+|---|---|---|
+| **MVP growth** | First 1–2 weeks; prove the relationship and memory loop | USER.md, MEMORY.md, session_search, one semantic provider if useful, user-model, experience.db, T0/T1 trust, weekly review |
+| **Adaptive growth** | After MVP is stable | MVP + skill reliability, personality-state, world/goals, proposals, snapshots, decay review, daily/weekly cadence |
+| **Full JARVIS mode** | After regression + trust drills pass | Adaptive growth + Stage 16 presence, T2/T3 controlled workspace actions, T4 individually allowlisted external actions |
+
+Start in **MVP growth**. Do not enable T2+ autonomy merely because the learning layer is working.
+
+## Day-1 / Week-1 / Month-1 operating summary
+
+| Time | Focus | Do |
+|---|---|---|
+| **Day 1** | Stable foundation | Finish Stages 0–4, establish SOUL/USER/MEMORY, verify session_search, choose Hindsight only after its smoke test |
+| **Week 1** | Relationship + learning | Run meaningful tasks, record corrections/outcomes, review user-model proposals, keep trust at T0/T1, measure RAM/voice/cost |
+| **Month 1** | Controlled adaptation | Enable personality/skill reliability, review snapshots and decay candidates, run red-team + restore + trust drills, then decide whether Stage 16/T2+ is justified |
+
+Detailed stages remain authoritative. This summary is the operational path through them.
+
+---
 ## How to read this guide
 
 ### Markers
@@ -2571,7 +2634,7 @@ Rules:
 
 **6.5a — v0.21.6 third-party plugin isolation**
 
-Hermes v0.21.6 adds a per-profile host process for non-bundled Python plugins. Use it as the V3 baseline after validating the plugins you actually use:
+Hermes v0.21.6 adds a per-profile host process for non-bundled Python plugins. Use it as the V4 baseline after validating the plugins you actually use:
 
 ```bash
 cat > /srv/vedha/ops/config/fragments/65-plugin-isolation.yaml <<'VEDHA_EOF'
@@ -2991,7 +3054,7 @@ Telegram is a remote control plane. If your phone or Telegram account is comprom
 
 | Profile | Telegram toolsets | V3 policy |
 |---|---|---|
-| **A — V3 baseline** | **Chat + optional web + memory only.** No terminal, code execution, file write, browser automation, delegation or messaging toolset. | **Mandatory trusted baseline.** Smallest remote blast radius. |
+| **A — V4 baseline** | **Chat + optional web + memory only.** No terminal, code execution, file write, browser automation, delegation or messaging toolset. | **Mandatory trusted baseline.** Smallest remote blast radius. |
 | **B — Remote coding** | Full/partial execution from Telegram. | **Not part of V3.** Treat any future enablement as a separate architecture experiment with a new threat model and fresh red-team drills. |
 
 Even Profile A combines private data (memory), untrusted content (web) and an outbound path (the web tool itself). The Telegram canary test in Stage 14 (D11) is therefore mandatory for Profile A; any future Profile B experiment requires its own separate threat-model approval and red-team drill.
@@ -3689,7 +3752,7 @@ vedha-cost-report
 | Long-running chat sessions | Telegram sessions keep accumulating context, so start a fresh session when the topic changes (`/new` or `/reset` **[VERIFY]**). Compare equivalent prompts and context sizes before concluding that one interface costs more. |
 | Retries | Retries after transient failures are billed. Watch for retry storms in the logs. |
 | Measurement | `/usage`, `hermes prompt-size` **[VERIFY]**, Activity. Use these, never a static price table, because pricing changes. |
-| Soft budget alert | Example: set VEDHA_SOFT_DAILY_COST_USD=2.00 and VEDHA_SOFT_WEEKLY_COST_USD=10.00 in vedha-env.sh; WARN above the threshold; never silently change provider/routing. |
+| Soft budget alert | Example: set VEDHA_SOFT_DAILY_COST_USD=2.00 and VEDHA_SOFT_WEEKLY_COST_USD=10.00 in vedha-env.sh; WARN above the threshold; never silently change provider/routing. | **Concrete policy:** at $2/day or $10/week, alert and stop non-essential background work; active user-requested sessions continue. Never change provider/routing automatically. Resume background work after the rolling spend is below the threshold or the user explicitly approves an override, logged in change control. |
 
 ### 11.10a — vedha-status
 
@@ -3867,7 +3930,7 @@ Goal: ≤ ~3 s from end of speech to first audio. Measure in 12.10.
 
 | Model | Languages | Notes |
 |---|---|---|
-| `large-v3-turbo` (faster-whisper identifier **[VERIFY]**) | **Multilingual, incl. Tamil** | **V3 canonical default**; verify the exact identifier exposed by faster-whisper. |
+| `large-v3-turbo` (faster-whisper identifier **[VERIFY]**) | **Multilingual, incl. Tamil** | **V4 canonical default**; verify the exact identifier exposed by faster-whisper. |
 | `Systran/faster-distil-whisper-large-v3` | English | Lower-latency English-only alternative. |
 
 ### Steps
@@ -3889,7 +3952,7 @@ v1 left out `python-multipart`. Without it, FastAPI refuses to start any route t
 
 **12.3 — Pre-download the model (so the service never needs the network at startup)**
 ```bash
-STT_MODEL="large-v3-turbo"     # V3 canonical multilingual model; verify exact identifier
+STT_MODEL="large-v3-turbo"     # V4 canonical multilingual model; verify exact identifier
 HF_HOME=/srv/vedha/models/hf /srv/vedha/runtime/voice-venv/bin/python -c \
   "from faster_whisper import download_model; print(download_model('$STT_MODEL'))"
 du -sh /srv/vedha/models/hf
@@ -4105,7 +4168,7 @@ cat > /srv/vedha/ops/config/fragments/120-voice.yaml <<'VEDHA_EOF'
 # Stage 12 — [VERIFY] all keys against the v0.21.6 voice/TTS docs and source.
 stt:
   enabled: true
-  streaming: false  # v3 local faster-whisper baseline; optional cloud live streaming is documented in 12.11
+  streaming: false  # V4 local faster-whisper baseline; optional cloud live streaming is documented in 12.11
   provider: vedha-local
   language: "en"
   providers:
@@ -4342,9 +4405,51 @@ If an operation cannot be interrupted safely, Veda must expose the current state
 
 Store the current trust level in state/growth/world/trust.yaml and mirror every change in veda-changes.md. Raising trust requires explicit approval, an allowlist/denylist, the relevant failure drills and a rollback path. Veda must never infer permanent permission from a single successful approval.
 
+### 13.1a — Trust enforcement contract
+
+The trust ladder is **not a prompt-only suggestion**.
+
+Enforcement has three layers:
+
+1. **Tool-surface enforcement:** expose only the toolsets appropriate to the current surface. Telegram Profile A remains a T0/T1 remote baseline.
+2. **Hermes approval enforcement:** destructive/high-risk terminal actions continue to use Hermes approval/checkpoint mechanisms.
+3. **Adapter/host enforcement:** every T2–T4 host-side or external action must call a deterministic trust gate **before** dispatch. The gate reads `state/growth/world/trust.yaml`, checks the requested scope, and fails closed if the current level or allowlist is insufficient.
+
+The trust gate contract is:
+
+````text
+vedha-trust-check <minimum-trust> <scope>
+    PASS → adapter may continue
+    FAIL → no action is dispatched
+````
+
+A model prompt saying “you are T3” is never sufficient authorization.
+
+For Hermes-native tools that have no supported pre-dispatch trust hook, Veda must **not** claim that T2+ trust is enforced. Keep those capabilities at T0/T1 or route them through a reviewed adapter that can enforce the gate.
+
+### 13.1b — SOUL vs personality conflict rule
+
+When `SOUL.md` and `personality-state.yaml` conflict, **SOUL.md wins**.
+
+Personality state may only modulate:
+- tone;
+- verbosity;
+- warmth/humor;
+- proactivity intensity;
+- preference weighting;
+
+and only inside the bounds defined by SOUL.md, system policy, safety policy and the explicit current user instruction.
+
+A learned personality value can never:
+- authorize a forbidden action;
+- override an explicit user instruction;
+- raise trust;
+- suppress uncertainty;
+- weaken safety/approval rules;
+
 ### 13.2 — Morning briefing
 
-Keep the V3 morning briefing. It remains a T1/T2 capability depending on whether the delivery itself is pre-approved. A briefing never grants permission to send arbitrary messages or modify schedules.
+Keep the V4 morning briefing. It remains a T1/T2 capability depending on whether the delivery itself is pre-approved. A briefing never grants permission to send arbitrary messages or modify schedules.
 
 ### 13.3 — Reminders
 
@@ -4771,6 +4876,75 @@ sqlite3 /srv/vedha/state/growth/experience.db 'PRAGMA integrity_check;'
 
 This is an experience ledger, not a second raw transcript store. Store concise summaries, corrections, outcomes, lessons and evidence references instead of full conversations.
 
+### 15.5a — Experience DB write path and operator queries
+
+`experience.db` has exactly one write authority: the host-side `vedha-growth` helper. The model does not receive direct SQLite write access, and the Docker sandbox does not mount the protected growth directory.
+
+Required write flow:
+
+````text
+conversation/task
+   ↓
+model proposes concise outcome/correction/decision data
+   ↓
+/srv/vedha/workspace/.vedha/proposals/
+   ↓
+host-side vedha-growth validation
+   ↓
+experience.db INSERT
+````
+
+Required deterministic operations:
+
+````text
+vedha-growth record <episode_id> <goal> <success:0|1> <summary>
+vedha-growth feedback <episode_id> <category> <text>
+vedha-growth decision <episode_id> <decision> <memory> <rule> <tool> <result>
+vedha-growth last10
+````
+
+`last10` returns the 10 most recent decisions with recorded outcomes:
+
+````sql
+SELECT id, decision, tool, result, created_at
+FROM decision_trace
+ORDER BY id DESC LIMIT 10;
+````
+
+Corrections enter `corrections` and/or `feedback`, never directly into `user-model.md`. The weekly review converts them into proposals.
+
+### 15.5b — Deterministic trust gate
+
+Create a fail-closed host helper used by every T2–T4 adapter:
+
+````bash
+cat > /srv/vedha/ops/bin/vedha-trust-check <<'VEDHA_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+. /srv/vedha/vedha-env.sh
+file="$VEDHA_STATE/growth/world/trust.yaml"
+required="${1:?minimum trust such as T2}"
+scope="${2:?approved scope such as workspace-write}"
+
+rank() {
+  case "$1" in
+    T0) echo 0 ;; T1) echo 1 ;; T2) echo 2 ;; T3) echo 3 ;; T4) echo 4 ;; T5) echo 5 ;;
+    *) echo 99 ;;
+  esac
+}
+
+current="$(yq -r '.current // "T0"' "$file")"
+cur_rank="$(rank "$current")"
+req_rank="$(rank "$required")"
+(( cur_rank >= req_rank )) || { echo "TRUST DENIED: current=$current required=$required" >&2; exit 1; }
+yq -e --arg scope "$scope" '.approved_scopes // [] | index($scope)' "$file" >/dev/null || { echo "TRUST DENIED: scope=$scope is not approved" >&2; exit 1; }
+echo "TRUST PASS: current=$current required=$required scope=$scope"
+VEDHA_EOF
+chmod 755 /srv/vedha/ops/bin/vedha-trust-check
+````
+
+`vedha-trust-check` must execute immediately before the side effect. It is necessary but not sufficient for high-risk actions; Hermes approvals/checkpoints and adapter-specific confirmation remain required.
+
 ### 15.6 — Proposal inbox and deterministic growth tooling
 
 Because the Docker sandbox is deliberately isolated, do not give it write access to protected growth state merely to make learning convenient.
@@ -4842,6 +5016,41 @@ case "$1" in
     cp -p "$VEDHA_STATE/growth/personality-state.yaml" "$d/" 2>/dev/null || true
     cp -p "$VEDHA_STATE/growth/operating-model.md" "$d/" 2>/dev/null || true
     echo "$d"
+    ;;
+  record)
+    test "$#" -eq 5 || { echo "usage: vedha-growth record <episode_id> <goal> <success:0|1> <summary>"; exit 2; }
+    python3 - "$DB" "$2" "$3" "$4" "$5" <<'PY'
+import sqlite3, sys, datetime
+db, episode_id, goal, success, summary = sys.argv[1:]
+if success not in {"0","1"}:
+    raise SystemExit("success must be 0 or 1")
+with sqlite3.connect(db) as c:
+    c.execute("insert or replace into episodes(id, goal, success, summary, started_at) values(?,?,?,?,?)",
+              (episode_id, goal, int(success), summary, datetime.datetime.now(datetime.timezone.utc).isoformat()))
+PY
+    ;;
+  feedback)
+    test "$#" -eq 4 || { echo "usage: vedha-growth feedback <episode_id> <category> <text>"; exit 2; }
+    python3 - "$DB" "$2" "$3" "$4" <<'PY'
+import sqlite3, sys, datetime
+db, episode_id, category, text = sys.argv[1:]
+with sqlite3.connect(db) as c:
+    c.execute("insert into feedback(episode_id, category, text, severity, created_at) values(?,?,?,?,?)",
+              (episode_id, category, text, "normal", datetime.datetime.now(datetime.timezone.utc).isoformat()))
+PY
+    ;;
+  decision)
+    test "$#" -eq 7 || { echo "usage: vedha-growth decision <episode_id> <decision> <memory> <rule> <tool> <result>"; exit 2; }
+    python3 - "$DB" "$2" "$3" "$4" "$5" "$6" "$7" <<'PY'
+import sqlite3, sys, datetime
+db, episode_id, decision, memory, rule, tool, result = sys.argv[1:]
+with sqlite3.connect(db) as c:
+    c.execute("insert into decision_trace(episode_id, decision, influencing_memory, influencing_rule, tool, result, created_at) values(?,?,?,?,?,?,?)",
+              (episode_id, decision, memory, rule, tool, result, datetime.datetime.now(datetime.timezone.utc).isoformat()))
+PY
+    ;;
+  last10)
+    sqlite3 -header -column "$DB" 'SELECT id, decision, tool, result, created_at FROM decision_trace ORDER BY id DESC LIMIT 10;'
     ;;
   unknowns)
     cat "$VEDHA_STATE/growth/unknowns.md" 2>/dev/null || echo "No unknowns report yet."
@@ -5772,7 +5981,7 @@ Gemini is not part of this architecture. (`gemini-2.0-flash` and `-flash-lite` w
 - Don't run parallel delegated children against the same files.
 - Don't connect employer accounts or put employer or client material anywhere in Vedha.
 - Don't add cloud STT/TTS keys to the local voice path.
-- Don't enable Telegram Profile B as the V3 baseline; mobile remains Profile A.
+- Don't enable Telegram Profile B as the V4 baseline; mobile remains Profile A.
 - Don't run `docker volume prune -f`; clean only disposable images/containers/build cache.
 - Don't let feedback, learning review or memory promotion silently rewrite `SOUL.md`.
 - Don't add a second semantic-memory/vector store without a measured retrieval benchmark and maintenance plan.
@@ -5897,7 +6106,7 @@ Record model file/hash, quantization, context size, CUDA build, VRAM, RAM and la
 ## Appendix E — Future Hardware Upgrade Path
 
 - A 16 GB+ GPU and more RAM make a local LLM or VLM, full-size Whisper and Kokoro practical at the same time. Choose models fresh at that point; names and memory needs change quickly.
-- **V3 hardware target:** 14th-gen Intel Core i3 (record exact SKU), 24 GB RAM, RTX 3060 12 GB. Start with `.wslconfig` `memory=16GB`, `swap=8GB`, then retune from measurements.\n- The Ryzen 7 7600X3D / 64 GB / RTX 5060 Ti plan in V2.2 is historical and is no longer the V3 target.
+- **V4 hardware target:** 14th-gen Intel Core i3 (record exact SKU), 24 GB RAM, RTX 3060 12 GB. Start with `.wslconfig` `memory=16GB`, `swap=8GB`, then retune from measurements.\n- The Ryzen 7 7600X3D / 64 GB / RTX 5060 Ti plan in V2.2 is historical and is no longer the V3 target.
 - A local VLM only matters if you want offline or private visual analysis. Hermes image handling doesn't need one.
 - Re-run Stage 1 GPU checks, Stage 12 concurrency, Stage 14 drills D14/D15, and the full Final validation after any hardware change.
 - An optional local fallback model would be a new architecture decision with its own routing audit. It isn't "fallback" in the Hermes sense unless you deliberately configure it.
@@ -6466,12 +6675,12 @@ Retune after measuring the real workload. Keep enough RAM available to Windows f
 | Sandbox container | ≤ 4 GB | `container_memory: 4096` |
 | STT service | 1.5–3 GB | `MemoryMax=4G`, `OOMScoreAdjust=500` |
 | Kokoro GPU | ~1–3 GB | `mem_limit: 3g`, `oom_score_adj=500` |
-| Hindsight/provider process | Measure after at least 20 retain/recall operations; record resident RAM, CPU, DB growth and background residency | Keep local and bounded; disable unattended use if it materially threatens the 16 GB WSL budget |
+| Hindsight/provider process | Measure after at least 20 retain/recall operations; record resident RAM, CPU, DB growth and background residency | **Starting pass criteria:** idle RSS ≤512 MB; active retain/recall RSS ≤1.5 GB; no OOM; no sustained swap thrash. Exceeding a threshold in 3+ of 20 operations is a FAIL for unattended mode until tuned. These are Veda acceptance thresholds, not Hindsight product limits. |
 | **Typical WSL load** | **~10–14 GB** | `.wslconfig memory=16GB` starting point |
 | **Peak target** | **≤15 GB sustained** | keep ~1 GB WSL headroom; use swap for short spikes |
 | **Concurrency test** | Maven + STT + Kokoro + gateway | Must pass without unacceptable OOM or swap thrash; measure rather than assume |
 
-Do not run a high-end local LLM simply because the RTX 3060 has 12 GB VRAM. The V3 primary brain remains cloud-hosted; the GPU is used for STT, TTS and future local embedding/vision experiments.
+Do not run a high-end local LLM simply because the RTX 3060 has 12 GB VRAM. The V4 primary brain remains cloud-hosted; the GPU is used for STT, TTS and future local embedding/vision experiments.
 
 ### GPU VRAM (12 GB)
 
