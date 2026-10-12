@@ -4311,198 +4311,124 @@ Remove the `stt`, `tts` and `wake_word` settings with the Stage 1.9e removal rec
 ```
 
 ---
-## Stage 13 — Proactive "Jarvis" Capabilities & Personal Growth
+
+## Stage 13 — Proactive "Jarvis" Capabilities, Presence & Personal Growth
 
 ### Objective
-Make Veda proactive **and capable of controlled personal growth**: briefings, reminders, personal integrations, memory review, and a daily ops digest, all within the three-level proactivity contract in SOUL.md and bounded in cost.
+Make Veda proactive without becoming noisy or autonomous beyond the trust granted to it. This stage defines interruption behavior, a progressive autonomy ladder, presence rituals, reminders, read-only integrations, learning reviews and memory/skill decay. Stage 15 supplies the deeper learning engine.
 
-### Prerequisites
-```text
-[ ] Stages 5, 8, 9, 11 complete
-```
+### 13.0 — Proactivity and interruption contract
 
-### Steps
-
-**13.0 — Apply the three-level proactivity model**
-
-**13.0a — Interruption policy**
-
-| Class | Examples | Policy |
+| Interrupt priority | Source | Expected behavior |
 |---|---|---|
-| Critical | security incident, backup failure, service outage, credential compromise | Alert immediately when necessary |
-| Time-sensitive | calendar conflict, deadline, travel change | Alert in allowed hours unless explicitly opted-in for urgent delivery |
-| Useful | daily briefing, project status | Batch into scheduled digest |
-| Interesting | AI/gadget/news suggestions | Digest only |
-| Never interrupt | routine memory proposal, low-value research completion | Wait for the next user interaction |
+| Highest | Voice barge-in / explicit wake-word interrupt | Stop speech immediately and preserve the current state |
+| High | Telegram /stop, "stop", or explicit interruption | Request a hard interrupt of the current tool/agent loop; do not start another side effect until the stop is acknowledged |
+| Medium | New high-priority user message during a lower-priority task | Pause/re-prioritize when supported; otherwise queue and show status |
+| Low | Background cron / briefing / digest | Never interrupt an active conversation; deliver at the next safe boundary |
 
-**Initiative budget:** max 3 unsolicited non-critical messages/day; never repeat the same suggestion until state changes; one suggestion per topic before user response; every initiative records why it ran, permitted actions and a stop condition.
+If an operation cannot be interrupted safely, Veda must expose the current state instead of pretending it stopped.
 
+### 13.1 — Progressive trust ladder
 
-Every proactive capability belongs to one level:
-
-| Level | Veda may do | Approval boundary |
+| Trust | Capability | Default |
 |---|---|---|
-| **0 — Learn** | Observe, classify, propose memory changes | No external action; no silent durable-memory promotion |
-| **1 — Suggest** | Research, read-only checks, drafts, summaries, scheduled briefings | Ask before any side effect |
-| **2 — Act** | Pre-approved, low-risk repetitive actions such as an approved daily briefing | Only the exact approved action class; never generalize permission |
+| T0 — Observe | Read state, classify events, propose memory/learning updates; no side effects | Baseline |
+| T1 — Suggest | Research, read-only checks, drafts, briefings | Allowed |
+| T2 — Confirmed workspace | Workspace actions with per-action confirmation | Opt-in |
+| T3 — Approved workspace | Low-risk reversible repetitive workspace actions | Opt-in |
+| T4 — Limited external | Explicitly allowlisted calendar/email/notification/media actions | Opt-in, narrow scope |
+| T5 — Elevated | Destructive, financial, security, permission or unrestricted OS actions | Never |
 
-Use **Level 0** for learning by default. Promote a capability to Level 2 only after you have tested it and explicitly accepted the scope.
+Store the current trust level in state/growth/world/trust.yaml and mirror every change in veda-changes.md. Raising trust requires explicit approval, an allowlist/denylist, the relevant failure drills and a rollback path. Veda must never infer permanent permission from a single successful approval.
 
+### 13.2 — Morning briefing
 
-**13.1 — Morning briefing (one LLM job per day)**
+Keep the V3 morning briefing. It remains a T1/T2 capability depending on whether the delivery itself is pre-approved. A briefing never grants permission to send arbitrary messages or modify schedules.
 
-⚠️ **USER INPUT REQUIRED** — replace `[YOUR_CITY]` in the prompt below before pressing Enter. Pick a time **outside** your quiet hours.
-```bash
-hermes cron create --help      # find the delivery/destination option for Telegram on your release [VERIFY]
-hermes cron create "every day at 07:30" \
-  "Morning briefing for me, delivered to Telegram. Use web search. Include: (1) today's weather for [YOUR_CITY], \
-(2) the three most important AI/LLM/agent developments from the last 24 hours with source links, \
-(3) any reminders listed in /workspace/briefing/reminders.md (read-only; do not modify it). \
-Keep it under 200 words. If a section has no reliable data, say so; do not invent anything."
-mkdir -p /srv/vedha/workspace/briefing && touch /srv/vedha/workspace/briefing/reminders.md
-```
-Check the schedule fires at **local** time: `timedatectl` must show your timezone, and the job's next-run time must look right in `hermes cron list`. If the schedule syntax differs on your release **[VERIFY]**, use its cron-expression form (e.g. `30 7 * * *`).
+### 13.3 — Reminders
 
-**13.2 — Reminders: decide how they get created**
+Keep Option A as the default. Agent-created schedules remain opt-in, bounded by a maximum job count, and subject to the current trust level.
 
-| Option | How | Risk |
-|---|---|---|
-| **A (default)** | You create them: `hermes cron create "in 2h" "Send me on Telegram: <text>"`, or add lines to `reminders.md` for the briefing | None beyond normal cron |
-| **B** | Let Veda create jobs from chat ("remind me at 6 pm") by setting `cron.allow_agent_scheduling: true` | Self-scheduled LLM jobs cost money and run unattended |
+### 13.4 — Calendar/email
 
-For **B**:
-- Keep `approvals.cron_mode: deny`.
-- Set `allow_agent_scheduling: true` in `80-cron.yaml` and run `vedha-config-apply 80-cron.yaml`.
-- Set `export VEDHA_MAX_CRON_JOBS=<n>` in `/srv/vedha/vedha-env.sh` (uncomment the line from 1.7). The deep health **timer** reads that file and warns above it; your shell setting has no effect on the timer.
-- Review `hermes cron list` weekly.
-- Use the SOUL.md rule "ask before changing your own schedules".
+Use read-only scopes first. Any future send/create scope becomes a separate T4 capability with its own explicit approval, audit entry and failure drill.
 
-**13.3 — Personal calendar and email (read-only first)**
-- Personal accounts only. **Never connect employer accounts.**
-- Pick a maintained MCP server for your provider (Google or Microsoft). Review it per Stage 6, and grant **read-only** scopes.
-- Test: "What's on my calendar tomorrow?" Then confirm Veda **cannot** create or send anything.
-- Add write scopes later only if you decide you want them. The SOUL.md "ask first before sending" rule then applies.
-- Add rows for any `auxiliary.mcp` calls to `aux-audit.md`.
+### 13.5 — Smart home
 
-**13.4 — Smart home (optional)**
-If you run Home Assistant, its MCP server integration **[VERIFY row 44]** can expose a curated set of entities. Expose only what you'd accept Veda toggling, and keep locks, alarms and garage doors **out**.
+Keep curated Home Assistant entities only. Locks, alarms and garage doors remain excluded. Smart-home permission does not grant Windows or general external permissions.
 
-**13.5 — Weekly personal-learning review (recommended)**
+### 13.6 — Lightweight daily presence ritual
 
-**13.5a — Batched post-conversation reflection (Level 0 only)**
+Optional and intentionally tiny:
+- Telegram: "Online. Focus: <current goal>. Quiet hours until <time>."
+- Local voice: "Good morning" only when Stage 16 proves the user is present/unlocked and quiet hours allow it.
+- Never interrupt an active conversation.
+- Never use the ritual to solicit replies.
 
-Trigger reflection after substantive sessions, explicit memory requests, user corrections, completed multi-step tasks, repeated preference signals or meaningful skill outcomes. Reflection produces **proposals**, not silent writes.
+Read state/growth/world/current.md and presence.md; do not modify them.
 
-Each proposal records type, confidence, source, privacy class, expiry/supersedes target and proposed destination.
+### 13.7 — Weekly personal-learning review
 
-Use these privacy classes:
-- `public` — safe in normal context;
-- `personal` — ordinary private preference/context;
-- `sensitive` — high-impact or intimate personal data; explicit approval and shorter retention;
-- `credential-adjacent` — secret hints, tokens, recovery information or anything that could help recover a credential; **never retain**. Keep this batched rather than per-message to control cost.
+The reviewer may inspect:
+- USER.md and MEMORY.md;
+- Hindsight semantic memory;
+- exact session history;
+- feedback and corrections;
+- completed task outcomes;
+- skill reliability;
+- goals/world state;
+- personality state and self-model;
+- unresolved proposals.
 
-Feedback convention: `feedback: good`, `feedback: wrong because ...`, `feedback: too verbose`, `feedback: too cautious`, `feedback: missed ...`, `feedback: remember ...`.
+It produces proposals only. Each proposal carries type, claim, evidence, confidence, privacy, destination, action, reason and rollback. Credential-adjacent candidates are always rejected.
 
-Promotion still requires the normal approval and verification path.
+### 13.8 — "What I still don't know"
 
+Once per week and on demand, answer:
+"What important things about me, my projects, or my preferences are you still uncertain about?"
 
-This is a **review**, not an autonomous memory rewrite. It uses a fresh session to inspect the durable profile and memory Veda already has, then reports candidates for cleanup or refinement to you.
+Rank unknowns by expected usefulness. Distinguish missing information, conflicting evidence and low-confidence inference. Ask at most three focused questions.
 
-```bash
-hermes cron create "every Sunday at 20:30" \
-  "Personal learning review for me. Review the current USER.md and MEMORY.md context only. Do not modify memory, config, schedules or any external system. Report at most 10 items: stale or temporary entries that should expire; duplicate or conflicting preferences; inferred patterns that should remain labeled or be confirmed; and useful stable facts or preferences that appear missing. For each item, state the proposed change and why. Do not invent anything."
-hermes cron list
-```
+### 13.9 — Daily ops digest
 
-Choose a time outside your quiet hours and verify the local next-run time. The review should deliver to Telegram only when your release’s cron destination is configured for Telegram; otherwise run it manually and read the report there **[VERIFY cron delivery syntax]**.
+Keep the deterministic no-LLM digest. Include health, disk, latest backup, OpenRouter usage/remaining budget, 24 h / 7 d spend when available, soft-budget state and current goal. Never estimate spend when deterministic data is unavailable.
 
-The review may **propose** changes, but Veda applies them only in a normal interactive session after you approve the change (or a clearly grouped set of low-risk memory edits).
+### 13.10 — Memory and skill decay
 
-**13.6 — Daily ops digest (no LLM)**
-```bash
-cat > /srv/vedha/ops/bin/vedha-digest <<'VEDHA_EOF'
-#!/usr/bin/env bash
-# vedha-digest — daily Telegram summary: health, OpenRouter key usage, disk, backups. No LLM.
-set -uo pipefail
-. /srv/vedha/vedha-env.sh; . "$VEDHA_OPS/lib/vedha-common.sh"
-h="$(vedha-health 2>&1 | tail -n 1)"
-k="$(or_api -f https://openrouter.ai/api/v1/key 2>/dev/null | jq -r '.data | "usage=\(.usage // "?") limit=\(.limit // "none") remaining=\(.limit_remaining // "?")"' 2>/dev/null)" \
-  || k="UNAVAILABLE (key rejected or API down — see health)"   # [VERIFY row 31]
-d="$(df -h "$VEDHA_ROOT" | awk 'NR==2{print $5" used"}')"
-b="$(ls -1t "$VEDHA_BACKUPS"/vedha-*.tar.gz.age 2>/dev/null | head -n1 | xargs -r basename)"
-vedha-alert "Daily digest — $h | OpenRouter key: $k | disk $d | last backup: ${b:-NONE}"
-VEDHA_EOF
-chmod 755 /srv/vedha/ops/bin/vedha-digest
+Nothing is auto-deleted because it is old.
 
-cat > /srv/vedha/ops/systemd/vedha-digest.service <<'VEDHA_EOF'
-[Unit]
-Description=Project Vedha daily digest
-OnFailure=vedha-notify-failure@%n.service
-[Service]
-Type=oneshot
-TimeoutStartSec=900
-ExecStart=/srv/vedha/ops/bin/vedha-digest
-VEDHA_EOF
-cat > /srv/vedha/ops/systemd/vedha-digest.timer <<'VEDHA_EOF'
-[Unit]
-Description=Project Vedha daily digest at 21:00
-[Timer]
-OnCalendar=*-*-* 21:00
-Persistent=true
-[Install]
-WantedBy=timers.target
-VEDHA_EOF
-systemctl --user link /srv/vedha/ops/systemd/vedha-digest.service
-systemctl --user enable --now /srv/vedha/ops/systemd/vedha-digest.timer
-systemctl --user daemon-reload
-vedha-digest
-git -C /srv/vedha/ops add -A && git -C /srv/vedha/ops commit -qm "Stage 13: digest"
-```
-The digest runs at 21:00. If that falls inside your quiet hours, change `OnCalendar=` in `vedha-digest.timer`, then `systemctl --user daemon-reload`. Scheduled messages must respect the SOUL.md proactivity contract too; only health **failures** are allowed to arrive during quiet hours.
+Review candidates:
+- skills unused for 60–90 days → candidate for archive;
+- expired temporary memories → candidate for cleanup;
+- low-confidence user-model traits without recent evidence → candidate for revalidation;
+- contradictory memories → candidate for supersession.
 
-**13.7 — Windows desktop control moves to Stage 16 (optional, off by default)**
-The trusted baseline remains WSL + Docker + Telegram Profile A. Windows-side awareness is added only through the separately reviewed local bridge in Stage 16.
+All decay actions are proposals until approved.
 
-**13.8 — Low-power always-on host remains future architecture**
-A mini PC or VPS for the gateway is still optional and is a separate deployment architecture with its own privacy/routing review.
+### 13.11 — Voice-specific presence and quiet hours
 
-### Verification / Testing
-1. `hermes cron list` shows the briefing with the right **local** next-run time; after it fires, the Telegram message arrived and its cost appears in Activity.
-2. `vedha-digest` delivered a message containing `Summary:`, `OpenRouter key:`, `disk` and `last backup`.
-3. Calendar/email MCP (if added): "What’s on my calendar tomorrow?" works, and "Create an event…" / "Send an email…" is **refused** (read-only scopes).
-4. `hermes cron list` contains only jobs you intended (briefing, heartbeat, reminders, and the weekly learning review if enabled).
-5. Learning review produces **proposals**, not silent memory/config changes.
-6. Memory contradiction, inference, expiry and forget tests in Stage 4 all pass.
+Spoken proactive announcements follow the same interruption policy as Telegram and are blocked during quiet hours unless critical. Barge-in always wins.
 
-### Expected result
-- One LLM briefing per day, at a local time outside quiet hours, under 200 words, with sources.
-- A daily digest with no LLM involved.
-- Integrations read-only and personal-only.
-- Veda can learn durable user preferences and context with explicit controls, rather than silently rewriting itself.
+### 13.12 — Verification
 
-### Troubleshooting
-- **Briefing fires at the wrong hour** — check `timedatectl` and the schedule syntax **[VERIFY row 22]**; use the cron-expression form.
-- **Briefing not delivered to Telegram** — the delivery option of `hermes cron create` differs per release; check `--help`.
-- **Digest says "UNAVAILABLE"** — the key was rejected or OpenRouter is down; `vedha-health` shows which.
-- **Too many self-created jobs (option B)** — remove the extras, and set `allow_agent_scheduling: false` again.
-- **Learning review changed memory unexpectedly** — disable the review job, inspect the affected entries, restore the last known-good memory state, and only re-enable review after confirming the prompt forbids writes.
-
-### Rollback / recovery
-Remove the briefing/reminder/learning-review jobs (8.5 remove subcommand). Disable the digest with `systemctl --user disable --now vedha-digest.timer`. Remove MCP servers per Stage 6 Rollback. Set `allow_agent_scheduling: false` and re-apply `80-cron.yaml`.
+Run interruption tests, trust-boundary tests, one tiny presence ritual, morning briefing, daily digest, weekly learning review, unknowns query and decay review. Record cost and observable state for each.
 
 ### Completion checklist
-```text
-[ ] Morning briefing fires at local time and is delivered; cost per run noted
-[ ] Reminder option chosen (A or B) with its guardrails
-[ ] (Optional) Calendar/email MCP read-only, personal accounts only, tested
-[ ] (Optional) Home Assistant with a curated entity set
-[ ] Daily ops digest timer active
-[ ] (Recommended) Weekly personal-learning review scheduled or deliberately left manual
-[ ] Memory contradiction, inference, expiry and forget behavior tested
-```
+`
+[ ] interruption contract tested
+[ ] T0/T1 baseline enforced
+[ ] any raised trust level has an explicit change-control entry
+[ ] morning briefing verified
+[ ] reminders verified
+[ ] read-only integrations verified
+[ ] daily presence ritual tested if enabled
+[ ] weekly learning review produces proposals only
+[ ] "what I still don't know" works
+[ ] decay review is proposal-only
+[ ] quiet-hours and voice interruption rules tested
+`
 
 ---
-
 ## Stage 14 — Failure-Mode Drills
 
 ### Objective
