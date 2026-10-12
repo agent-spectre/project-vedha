@@ -4514,170 +4514,670 @@ fi
 ---
 
 ---
-## Stage 15 — Growth Layer, Self-Model, Feedback, Evaluation & Change Control
+
+## Stage 15 — Adaptive Learning Engine, Self-Model, User Model, Experience, Feedback, Evaluation & Change Control
 
 ### Objective
-Turn Veda from an agent with memory into a controlled long-term personal system. Growth follows observe → retrieve → reflect → propose → approve → test → activate → review.
+Turn Veda from "an assistant with memory" into a controlled long-term personal system.
 
-### 15.1 — Veda change-control ledger
-```bash
-cat > /srv/vedha/ops/docs/veda-changes.md <<'VEDHA_EOF'
-# Veda change-control ledger
-| Date | Change | Reason | Files/components | Approval | Test result | Rollback |
-|---|---|---|---|---|---|---|
-VEDHA_EOF
-```
-Record intentional changes to SOUL.md, memory providers/policy, skills, MCP servers, cron, tool permissions, model/routing, voice behavior, autonomy and Windows integrations.
+The learning loop is:
 
-### 15.2 — Governed self-model
-Do not let normal conversation rewrite SOUL.md. Create a separate, version-controlled self-model:
-```bash
-cat > /srv/vedha/ops/persona/VEDA-SELF-MODEL.md <<'VEDHA_EOF'
-# Veda self-model
+`
+observe → retrieve → act → record outcome → evaluate → reflect
+        → propose → approve → apply → verify → measure improvement
+        → repeat
+`
 
-Stable identity: composed, direct, honest, technically rigorous, lightly witty, proactive without nagging, conservative with external side effects.
+The model weights do not need to change. Veda learns through structured memory, a user model, episodic experience, procedural skills, adaptive personality state, goals/world state, and evidence-backed evaluation.
 
-Evolving relationship model:
-- interaction patterns that improve usefulness
-- preferred explanation depth
-- communication patterns that consistently work
-- recurring mistakes to avoid
-- tools/workflows Veda has become reliable at
-- areas where Veda should ask rather than infer
+### 15.1 — Change-control ledger
 
-Confidence: explicit statement > repeated observation > single inference.
-Temporary observations need expiry. Sensitive or credential-adjacent data never enters this file.
-VEDHA_EOF
-git -C /srv/vedha/ops add persona/VEDA-SELF-MODEL.md
-git -C /srv/vedha/ops commit -qm "V3: add governed Veda self-model"
-```
-The self-model is not always injected. Load it for growth/identity tasks only.
+Keep:
 
-### 15.3 — Feedback loop
-Use: feedback: good; feedback: wrong because ...; feedback: too verbose; feedback: too cautious; feedback: missed ...; feedback: remember .... Classify each durable conclusion with source, confidence, privacy class and date.
+    /srv/vedha/ops/docs/veda-changes.md
 
-### 15.4 — Persona regression suite
-Create ops/docs/persona-evals.md with fixed cases for technical help, casual chat, pushback, uncertainty, memory, forget, safety, web injection, voice style and proactivity. Record Hermes commit, model/provider, prompt size, latency and a human 1–5 score. Run after Hermes/model/SOUL/tool changes.
+Every change to SOUL.md, USER.md, user-model, personality state, skills, memory provider/policy, MCP, tool permissions, trust level, model/routing, voice behavior, goals or Windows integration requires a dated ledger entry.
 
-Use this starter file:
+### 15.2 — Stable self-model vs learned operating model
 
-```bash
-cat > /srv/vedha/ops/docs/persona-evals.md <<'VEDHA_EOF'
-# Veda persona / behavior regression suite
+Create two artifacts.
 
-| Date | Case | Hermes commit | Model/provider | Score 1-5 | Result | Notes |
-|---|---|---|---|---:|---|---|
-| | technical | | | | | |
-| | casual | | | | | |
-| | pushback | | | | | |
-| | uncertainty | | | | | |
-| | memory | | | | | |
-| | forget | | | | | |
-| | safety | | | | | |
-| | web injection | | | | | |
-| | voice | | | | | |
-| | proactivity | | | | | |
-VEDHA_EOF
-```
+Stable self-model:
 
+    /srv/vedha/ops/persona/VEDA-SELF-MODEL.md
 
-### 15.5 — Skill lifecycle
-Repeated task → skill proposal → human review → skills.write_approval gate → fixed tests → enable → measure → monthly keep/improve/archive. Permanent skills record purpose, inputs, tools, approval boundary, failure behavior, privacy implications and verification tests. Critical skills are never silently overwritten.
+It contains identity, core principles, stable communication character and immutable safety boundaries.
 
-### 15.6 — Project memory convention
+Learned operating model:
 
-### 15.6a — Biweekly persona review
+    /srv/vedha/state/growth/operating-model.md
 
-Every two weeks, run a Level-0 persona review. Ask Veda to identify at most three aspects of `SOUL.md` that appear outdated, too cautious, too permissive or inconsistent across terminal/Telegram/voice. The output is a proposal with evidence, expected benefit and rollback.
+It contains:
+- tools/workflows Veda is reliable at;
+- recurring mistakes;
+- areas where Veda should ask rather than infer;
+- evidence-backed interaction lessons;
+- temporary hypotheses with expiry.
 
-The review never edits `SOUL.md` automatically. Approved changes require a `veda-changes.md` entry, the persona regression suite, a backup, activation and a 7-day observation period.
-For important projects create PROJECT.md, DECISIONS.md and CURRENT.md. Keep global USER/MEMORY compact; keep project-specific decisions in project-local documents and/or semantic memory.
+Normal conversation must never directly rewrite the stable self-model.
 
-### 15.7 — World state and active goals
+### 15.3 — Evidence-backed user model
+
 Create:
-```text
-/srv/vedha/state/growth/world/current.md
-/srv/vedha/state/growth/world/goals.md
-/srv/vedha/state/growth/world/initiatives.md
-```
 
-Initialize them with explicit structure:
+    /srv/vedha/state/growth/user-model.md
 
-```bash
+Use this structure for each durable trait:
+
+    Trait:
+      claim:
+      type: explicit | repeated_observation | inference
+      confidence: 0.00-1.00
+      first_observed:
+      last_confirmed:
+      evidence:
+        - session/event reference
+      privacy: public | personal | sensitive
+      supersedes:
+      expiry:
+
+Maintain separate dimensions:
+- communication style;
+- preferred technical depth;
+- decision style;
+- risk/approval preferences;
+- recurring workflows;
+- interests;
+- time/availability patterns;
+- project-specific working style.
+
+Rules:
+- explicit statement > repeated observation > single inference;
+- conflicting explicit statements require clarification;
+- inference is never presented as fact;
+- sensitive information needs explicit approval and shorter retention;
+- credential-adjacent information is never retained.
+
+### 15.4 — Dynamic personality state
+
+Create:
+
+    /srv/vedha/state/growth/personality-state.yaml
+
+Keep the core personality in SOUL.md and put only adaptive expression state here.
+
+`
+traits:
+  humor: 0.30
+  warmth: 0.50
+  initiative: 0.70
+  challenge_user: 0.85
+  verbosity: 0.65
+  caution: 0.80
+  formality: 0.55
+  technical_depth: 0.90
+
+evidence:
+  - trait: challenge_user
+    confidence: 0.92
+    basis: repeated_positive_corrections
+
+last_review:
+next_review:
+`
+
+Personality state may influence style only. It can never override system/safety policy, trust boundaries or an explicit current instruction.
+
+### 15.5 — Experience / task-outcome store
+
+Create:
+
+    /srv/vedha/state/growth/experience.db
+
+Initialize SQLite:
+
+`
+sqlite3 /srv/vedha/state/growth/experience.db <<'SQL'
+PRAGMA journal_mode=WAL;
+
+CREATE TABLE IF NOT EXISTS episodes (
+  id TEXT PRIMARY KEY,
+  session_id TEXT,
+  surface TEXT,
+  started_at TEXT NOT NULL,
+  ended_at TEXT,
+  goal TEXT,
+  outcome TEXT,
+  success INTEGER,
+  summary TEXT,
+  confidence REAL
+);
+
+CREATE TABLE IF NOT EXISTS observations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  episode_id TEXT,
+  kind TEXT,
+  value TEXT,
+  source TEXT,
+  confidence REAL,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS feedback (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  episode_id TEXT,
+  category TEXT,
+  text TEXT,
+  severity TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS corrections (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  episode_id TEXT,
+  domain TEXT,
+  old_belief TEXT,
+  new_belief TEXT,
+  source TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS proposals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  type TEXT,
+  claim TEXT,
+  evidence_json TEXT,
+  confidence REAL,
+  privacy TEXT,
+  destination TEXT,
+  action TEXT,
+  reason TEXT,
+  rollback TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at TEXT NOT NULL,
+  applied_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS skill_metrics (
+  skill TEXT PRIMARY KEY,
+  attempts INTEGER DEFAULT 0,
+  successes INTEGER DEFAULT 0,
+  failures INTEGER DEFAULT 0,
+  last_used TEXT,
+  last_verified TEXT,
+  confidence REAL
+);
+
+CREATE TABLE IF NOT EXISTS trait_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  trait TEXT,
+  old_value REAL,
+  new_value REAL,
+  confidence REAL,
+  reason TEXT,
+  evidence_json TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS action_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  episode_id TEXT,
+  action_class TEXT,
+  trust_level TEXT,
+  approved INTEGER,
+  reversible INTEGER,
+  result TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS decision_trace (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  episode_id TEXT,
+  decision TEXT,
+  influencing_memory TEXT,
+  influencing_rule TEXT,
+  tool TEXT,
+  result TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS evaluations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  episode_id TEXT,
+  metric TEXT,
+  score REAL,
+  previous_score REAL,
+  notes TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS trust_changes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  old_level TEXT,
+  new_level TEXT,
+  reason TEXT,
+  approved_by TEXT,
+  rollback TEXT,
+  created_at TEXT NOT NULL
+);
+
+PRAGMA user_version=1;
+SQL
+
+sqlite3 /srv/vedha/state/growth/experience.db 'PRAGMA integrity_check;'
+`
+
+This is an experience ledger, not a second raw transcript store. Store concise summaries, corrections, outcomes, lessons and evidence references instead of full conversations.
+
+### 15.6 — Proposal inbox and deterministic growth tooling
+
+Because the Docker sandbox is deliberately isolated, do not give it write access to protected growth state merely to make learning convenient.
+
+Create a proposal inbox inside the existing workspace:
+
+    /srv/vedha/workspace/.vedha/proposals/
+
+Create the protected state directories:
+
+`
+mkdir -p /srv/vedha/state/growth/proposals /srv/vedha/state/growth/metrics /srv/vedha/state/growth/persona-snapshots /srv/vedha/state/growth/world
+mkdir -p /srv/vedha/workspace/.vedha/proposals
+chmod 700 /srv/vedha/state/growth
+chmod 700 /srv/vedha/workspace/.vedha/proposals
+`
+
+Veda may propose a JSON/YAML change in the workspace inbox. A host-side review/import step validates it before any protected state changes.
+
+Recommended proposal envelope:
+
+`
+type: user_model | memory | skill | personality | goal | workflow
+claim: "<what should change>"
+evidence:
+  - "<session/event/skill reference>"
+confidence: 0.0
+privacy: public | personal | sensitive | credential-adjacent
+destination: USER.md | MEMORY.md | hindsight | user-model | skill | personality | goal
+action: add | replace | supersede | expire | archive | reject
+reason: "<why this improves future behavior>"
+rollback: "<how to undo it>"
+`
+
+Credential-adjacent proposals are rejected by the deterministic validator and never imported.
+
+### 15.7 — Host-side growth helper
+
+Create:
+
+`
+cat > /srv/vedha/ops/bin/vedha-growth <<'VEDHA_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+. /srv/vedha/vedha-env.sh
+
+DB="$VEDHA_STATE/growth/experience.db"
+
+case "$1" in
+  init)
+    mkdir -p "$VEDHA_STATE/growth" "$VEDHA_STATE/growth/proposals" "$VEDHA_STATE/growth/metrics" "$VEDHA_STATE/growth/persona-snapshots" "$VEDHA_STATE/growth/world"
+    sqlite3 "$DB" 'PRAGMA integrity_check;' >/dev/null
+    echo "growth state initialized"
+    ;;
+  health)
+    test -f "$DB"
+    test "$(sqlite3 "$DB" 'PRAGMA integrity_check;')" = ok
+    echo "experience.db: OK"
+    echo "Pending proposals: $(sqlite3 "$DB" "select count(*) from proposals where status='pending';")"
+    echo "Trust: $(cat "$VEDHA_STATE/growth/world/trust.yaml" 2>/dev/null || echo T0)"
+    ;;
+  snapshot)
+    ts="$(date +%Y%m%d-%H%M%S)"
+    d="$VEDHA_STATE/growth/persona-snapshots/$ts"
+    mkdir -p "$d"
+    cp -p "$HERMES_HOME/SOUL.md" "$d/" 2>/dev/null || true
+    cp -p "$VEDHA_OPS/persona/VEDA-SELF-MODEL.md" "$d/" 2>/dev/null || true
+    cp -p "$VEDHA_STATE/growth/user-model.md" "$d/" 2>/dev/null || true
+    cp -p "$VEDHA_STATE/growth/personality-state.yaml" "$d/" 2>/dev/null || true
+    cp -p "$VEDHA_STATE/growth/operating-model.md" "$d/" 2>/dev/null || true
+    echo "$d"
+    ;;
+  unknowns)
+    cat "$VEDHA_STATE/growth/unknowns.md" 2>/dev/null || echo "No unknowns report yet."
+    ;;
+  explain-last)
+    sqlite3 -header -column "$DB" 'select id,decision,influencing_memory,influencing_rule,tool,result,created_at from decision_trace order by id desc limit 1;'
+    ;;
+  decay)
+    echo "Review candidates only; nothing is deleted automatically."
+    sqlite3 -header -column "$DB" 'select skill,attempts,successes,failures,last_used,last_verified,confidence from skill_metrics order by last_used asc;'
+    ;;
+  *)
+    echo "usage: vedha-growth {init|health|snapshot|unknowns|explain-last|decay}"
+    exit 2
+    ;;
+esac
+VEDHA_EOF
+chmod 755 /srv/vedha/ops/bin/vedha-growth
+`
+
+The helper is deterministic. It does not call an LLM, raise trust, modify SOUL.md or auto-import proposals.
+
+### 15.8 — Experience-driven learning rules
+
+After every substantive task, classify:
+
+`
+goal
+→ plan
+→ actions
+→ result
+→ user correction / feedback
+→ lesson
+→ proposal
+`
+
+A successful process exit does not equal a successful task. Verify the user-visible outcome.
+
+### 15.9 — Feedback and correction routing
+
+Normalize explicit feedback:
+
+`
+feedback: good
+feedback: wrong because ...
+feedback: too verbose
+feedback: too cautious
+feedback: missed ...
+feedback: remember ...
+`
+
+Classify each correction as factual knowledge, reasoning/decision, user preference, communication style, safety/trust boundary, project/workflow or skill/procedure.
+
+Examples:
+- "Don't explain basic Java to me" → user model;
+- "You were wrong because Oracle does X here" → knowledge/project lesson;
+- "Stop asking permission for reversible workspace changes" → trust/proactivity proposal;
+- "Don't send anything without asking" → trust/policy boundary;
+- "You keep forgetting this build convention" → project memory/skill.
+
+### 15.10 — Skill reliability and procedural learning
+
+Every important learned skill records:
+- attempts;
+- successes;
+- failures;
+- success rate;
+- last used;
+- last verified;
+- known failure modes;
+- confidence;
+- approval boundary;
+- privacy implications.
+
+Example:
+
+`
+skill: java-offline-maven-build
+attempts: 23
+successes: 21
+failures: 2
+success_rate: 0.913
+last_used: 2026-10-11
+last_verified: 2026-10-10
+confidence: high
+known_failure_modes:
+  - missing_maven_artifact
+`
+
+Decay:
+- unused 60–90 days → candidate for archive;
+- repeated failures → candidate for revision;
+- stale dependencies → candidate for re-verification;
+- never auto-delete.
+
+### 15.11 — Memory curation
+
+Hot memory stays compact.
+
+The learning engine may propose:
+- add/replace/remove USER.md or MEMORY.md;
+- retain/expire Hindsight memories;
+- user-model updates;
+- skill updates;
+- personality-state updates;
+- goal/world-state updates.
+
+Every proposal carries evidence, confidence and rollback. Secret-like material is rejected.
+
+### 15.12 — Persona regression and versioned snapshots
+
+Keep ops/docs/persona-evals.md as a longitudinal benchmark.
+
+Required cases:
+- technical correctness;
+- pushback;
+- uncertainty;
+- memory;
+- forget;
+- user-model;
+- skill reliability;
+- web injection;
+- voice style;
+- proactivity;
+- trust boundary;
+- degraded mode;
+- explain-last-decision.
+
+Record date, Hermes commit, model/provider, prompt size, latency, cost, score 1–5 and notes.
+
+After every accepted SOUL/personality/user-model behavior change:
+1. snapshot the relevant files;
+2. add veda-changes.md entry;
+3. run the regression suite;
+4. observe for 7 days before another persona change.
+
+### 15.13 — Project memory and world state
+
+For important projects create:
+
+    PROJECT.md
+    DECISIONS.md
+    CURRENT.md
+
+Create:
+
+`
 cat > /srv/vedha/state/growth/world/current.md <<'VEDHA_EOF'
 # Current world state
-Last updated: <date>
-Current focus: <focus>
-Active project: <project>
-Important today: <items>
-Pending approvals: <items>
-Open incidents: <items>
+Last updated:
+Current focus:
+Active project:
+Important today:
+Pending approvals:
+Open incidents:
+Last handoff:
+Next step:
 VEDHA_EOF
+
 cat > /srv/vedha/state/growth/world/goals.md <<'VEDHA_EOF'
 # Active goals
 ## Goal
-Why: <why>
-Success condition: <measurable result>
-Next review: <date>
-Allowed actions: <allowlist>
-Forbidden actions: <denylist>
-Priority: <critical|high|normal|low>
-Status: <active|paused|complete>
+Why:
+Success condition:
+Next review:
+Allowed actions:
+Forbidden actions:
+Priority:
+Status:
 VEDHA_EOF
+
 cat > /srv/vedha/state/growth/world/initiatives.md <<'VEDHA_EOF'
 # Active initiatives
 ## Initiative
-Goal: <goal>
-Why now: <reason>
-Allowed actions: <allowlist>
-Stop condition: <condition>
-Next review: <date>
-Status: <proposed|approved|running|paused|complete>
+Goal:
+Why now:
+Allowed actions:
+Stop condition:
+Next review:
+Status:
 VEDHA_EOF
-```
 
-Goals record purpose, success condition, next review, allowed actions, forbidden actions, priority and status. An initiative runs only inside explicit bounds and the proactivity budget.
+cat > /srv/vedha/state/growth/world/trust.yaml <<'VEDHA_EOF'
+current: T0
+approved_scopes:
+  - observe
+change_control_required: true
+last_changed:
+VEDHA_EOF
+`
 
-### 15.8 — First-week checklist
-Use Veda daily for a real task; test memory write + forget; inspect hermes journey; run vedha-status; record feedback; verify Telegram Profile A; verify voice with headset; review cost; run vedha-health --deep. Do not enable agent-created cron or calendar/email yet.
+### 15.14 — Situational state and local presence
 
-### 15.9 — First-month checklist
-Prune hot/external memory; review feedback; evaluate learned skills; review self-model and propose only 1–3 changes; measure daily cost; run backup + restore; review cron and interruption behavior; run persona suite and red-team fixture; decide whether any Level 0/1 behavior should become Level 2.
+When Stage 16 is enabled, add a compact state file:
 
-### 15.10 — Red-team Friday
-Test web/document/repository injection, secret disclosure, MCP installation requests, external send/payment/destructive requests, schedule/config changes and delegated attempts to bypass sandbox/network boundaries. Record results in ops/docs/drills.md.
+    /srv/vedha/state/growth/world/presence.md
 
-### 15.11 — Monthly restore and memory audit
-Restore the latest encrypted archive into a disposable root; verify config, doctor, memory provider, session DB and hot/semantic memory; run the restore smoke; delete the disposable root; record the result.
+Allowed fields:
+- present;
+- foreground app;
+- game mode;
+- CPU/RAM;
+- GPU/VRAM;
+- audio device;
+- volume;
+- idle time;
+- power;
+- network;
+- last update.
 
-### 15.12 — Growth invariants
-Veda must never silently rewrite SOUL.md, broaden Telegram permissions, add MCP/skill sources, create unrestricted cron, unpin providers, promote an inference to a fact, reactivate forgotten memory, or claim tool/memory success without evidence.
+Do not retain screenshots or minute-by-minute telemetry by default.
+
+### 15.15 — Session hygiene and continuity
+
+A Telegram conversation is an episode, not the agent's entire biography.
+
+Prefer a fresh session after a major task, project/topic switch, new day, large tool-heavy run, repeated compaction or explicit reset request.
+
+Before the boundary, capture current focus, unresolved actions, important outcome, pending approval and next step.
+
+Never describe this as forgetting. The user model, semantic memory and durable experience persist across episodes.
+
+### 15.16 — Explain-last-decision debug mode
+
+Support the operator prompt:
+
+"Explain the last tool call / decision and which memory, rule, user-model trait, goal, trust level or skill influenced it."
+
+The audit trace should identify:
+- decision;
+- tool/action;
+- relevant memory;
+- relevant rule;
+- user-model trait;
+- goal;
+- trust level;
+- approval;
+- result;
+- uncertainty.
+
+This is an audit trace, not a request for hidden chain-of-thought. Never disclose secrets.
+
+### 15.17 — "What Veda still doesn't know"
+
+On demand and weekly, generate:
+
+    /srv/vedha/state/growth/unknowns.md
+
+Rank unknowns by expected usefulness and include evidence for why the uncertainty matters. Distinguish missing information, conflicting evidence, low-confidence inference and stale information. Ask no more than three focused questions when interactive clarification is appropriate.
+
+### 15.18 — Learning cadence
+
+Recommended cadence:
+- every substantive session: capture outcome/corrections;
+- daily: lightweight candidate extraction;
+- weekly: deep memory/user-model/skill/personality review;
+- biweekly: persona/self-model proposal review;
+- monthly: restore + memory audit + skill decay + architecture review.
+
+Background Hermes review is optional and should be disabled or tightly bounded until measured. Prefer explicit Stage 15 review because it is easier to audit.
+
+### 15.19 — Trust and interruption invariants
+
+The learning engine must never:
+- raise trust automatically;
+- treat successful approval as blanket permission;
+- continue speaking after voice barge-in;
+- let a lower-priority cron interrupt an active user turn;
+- let personality state override the current explicit request;
+- let an inferred preference override an explicit statement.
+
+### 15.20 — Red-team Friday
+
+Test web/document/repository injection, secret disclosure, memory poisoning, fake corrections, MCP installation requests, external send/payment/destructive requests, schedule/config changes, delegated sandbox/network bypass attempts, Windows bridge abuse, trust escalation attempts, personality prompt injection and false success claims.
+
+### 15.21 — Growth invariants
+
+Veda must never silently:
+- rewrite SOUL.md;
+- broaden Telegram permissions;
+- add MCP/skill sources;
+- raise trust level;
+- create unrestricted cron;
+- unpin providers;
+- promote an inference to a fact;
+- reactivate forgotten memory;
+- retain credential-adjacent information;
+- claim a memory/skill write succeeded without evidence;
+- claim an external action succeeded without verification;
+- use a long Telegram session as permanent memory;
+- use personality state to override explicit current instructions.
 
 ### Verification / Testing
 
-Run `vedha-status`, `hermes journey --json`, the persona regression suite, a memory write/forget test, a skill-write approval test and the current red-team fixture.
+Run:
+1. vedha-status and vedha-health --deep;
+2. sqlite3 /srv/vedha/state/growth/experience.db 'PRAGMA integrity_check;';
+3. explicit/inference/conflict user-model tests;
+4. experience record + outcome correction test;
+5. skill reliability update test;
+6. personality proposal + snapshot + rollback test;
+7. trust refusal/escalation tests;
+8. session-boundary handoff test;
+9. unknowns query;
+10. explain-last-decision audit;
+11. persona regression suite;
+12. red-team fixture;
+13. monthly restore procedure.
 
 ### Expected result
 
-Growth proposals are observable and reviewable; no persona, config or tool-permission change happens silently.
+Veda can improve behavior over time without changing model weights: remember what matters, understand how you prefer to work, learn from corrections, remember what worked and failed, improve reusable procedures, adapt expression style within controlled bounds, maintain goals/current context, become more proactive only when trust is deliberately raised, and keep a reversible history of accepted changes.
 
 ### Rollback / recovery
 
-Reject pending proposals, revert the related `veda-changes.md` change, restore the last known-good persona/memory snapshot, and rerun the regression suite before re-enabling the change.
+Reject proposals, restore the latest persona snapshot, revert veda-changes.md, restore experience.db from backup if corrupted, lower trust level, disable background review, disable Hindsight if semantic recall is noisy, and rerun the regression suite before resuming higher autonomy.
 
 ### Completion checklist
-```text
+`
 [ ] veda-changes.md active
-[ ] self-model active and governed
-[ ] persona-evals.md recorded
-[ ] feedback convention tested
-[ ] project-memory convention used for one project
-[ ] world-state/goals files created
-[ ] first-week and first-month reviews completed
+[ ] stable self-model and learned operating model separated
+[ ] user-model active with evidence/confidence
+[ ] personality-state active and governed
+[ ] experience.db created and integrity checked
+[ ] proposal inbox + deterministic growth helper active
+[ ] substantive-task outcome capture tested
+[ ] correction routing tested
+[ ] skill reliability metrics tested
+[ ] persona snapshots + 7-day observation rule active
+[ ] world-state/goals/trust files created
+[ ] presence-state path defined if Stage 16
+[ ] session hygiene tested
+[ ] explain-last-decision works
+[ ] "what Veda still doesn't know" works
+[ ] daily/weekly/biweekly/monthly cadence documented
 [ ] red-team fixture passed
-[ ] monthly restore procedure rehearsed
 [ ] growth invariants reviewed
-```
+`
 
 ---
 ## Stage 16 — Optional Windows Bridge & Local Presence
