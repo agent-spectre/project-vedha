@@ -3376,7 +3376,19 @@ C="$HERMES_HOME/config.yaml"
       warn "$(basename "$mf") not created yet"
     fi
   done
-  echo "== Services =="
+  echo "== Growth / learning state =="
+mkdir -p "$VEDHA_STATE/growth"
+for f in "$VEDHA_STATE/growth/user-model.md" "$VEDHA_STATE/growth/personality-state.yaml" "$VEDHA_STATE/growth/world/current.md"; do
+  [[ -s "$f" ]] && pass "$(basename "$f") present" || warn "$(basename "$f") missing"
+done
+if [[ -f "$VEDHA_STATE/growth/experience.db" ]]; then
+  sqlite3 "$VEDHA_STATE/growth/experience.db" 'PRAGMA integrity_check;' 2>/dev/null | grep -qx ok \
+    && pass "experience.db integrity ok" || fail "experience.db integrity check failed"
+  db_mb="$(du -m "$VEDHA_STATE/growth/experience.db" | awk '{print $1}')"
+  if (( db_mb <= 512 )); then pass "experience.db size within 512MB"; else warn "experience.db is large; review/archive it"; fi
+fi
+
+echo "== Services =="
   MAINT=0; mnt="$VEDHA_STATE/maintenance"     # written by vedha-backup while services are stopped on purpose
   [[ -f "$mnt" ]] && (( $(date +%s) - $(stat -c %Y "$mnt") < 7200 )) && { MAINT=1; warn "maintenance in progress: $(cat "$mnt")"; }
   if (( ! MAINT )) && unit_enabled hermes-gateway.service; then unit_active hermes-gateway.service && pass "gateway active" || fail "gateway NOT active"; fi
@@ -3389,7 +3401,23 @@ C="$HERMES_HOME/config.yaml"
       && pass "Kokoro reachable" || fail "Kokoro unreachable"
   elif timeout 20 docker ps -a --format '{{.Names}}' 2>/dev/null | grep -qx kokoro; then
     warn "Kokoro container stopped (fine if you run it on demand)"; fi
-  echo "== Docker / sandbox =="
+  if (( DEEP )); then
+  echo "== Host resource pressure =="
+  ram_used_mb="$(free -m | awk '/^Mem:/{print $3}')"
+  swap_used_mb="$(free -m | awk '/^Swap:/{print $3}')"
+  echo "RAM used: ${ram_used_mb}MB | swap used: ${swap_used_mb}MB | WSL budget target: 16384MB"
+  if (( ram_used_mb > 13926 )); then warn "RAM use >85% of the 16 GB WSL budget"; else pass "RAM usage within target"; fi
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu --format=csv,noheader 2>/dev/null || true
+  fi
+  if journalctl -k --no-pager -n 200 2>/dev/null | grep -qiE 'out of memory|oom-killer|killed process'; then
+    fail "recent kernel OOM evidence found"
+  else
+    pass "no recent kernel OOM evidence"
+  fi
+fi
+
+echo "== Docker / sandbox =="
   if timeout 30 docker info >/dev/null 2>&1; then pass "Docker up"; rm -f "$VEDHA_STATE/docker-down-since"
     want_tag="$(yq '.terminal.docker_image' "$C" 2>/dev/null)"
     want_id="$(sed -n 's/^sandbox_image_id=//p' "$VEDHA_OPS/docs/validation-ledger.md" | tail -n1)"
