@@ -6644,20 +6644,40 @@ if 'export VEDHA_ROOT="/srv/vedha"' not in s:
     errors.append('live storage invariant missing')
 if '### Personal learning model' not in s:
     errors.append('personal learning model missing')
-if 'Level 0 — Learn' not in s or 'Level 1 — Suggest' not in s or 'Level 2 — Act' not in s:
-    errors.append('proactivity levels missing')
+if 'T0 — Observe' not in s or 'T1 — Suggest' not in s or 'T5 — Elevated' not in s:
+    errors.append('trust ladder missing')
 if not re.search(r'^\| D(?:21|22|23|24) \|', stage14, re.M):
     errors.append('learning failure drills D21-D24 missing')
-if '**13.5 — Weekly personal-learning review (recommended)**' not in s:
+if '### 13.7 — Weekly personal-learning review' not in s:
     errors.append('personal-learning review missing')
-if '## Stage 15 — Growth Layer, Self-Model, Feedback, Evaluation & Change Control' not in s:
-    errors.append('Stage 15 missing')
+if '## Stage 15 — Adaptive Learning Engine, Self-Model, User Model, Experience, Feedback, Evaluation & Change Control' not in s:
+    errors.append('Stage 15 V4 heading missing')
 if '## Stage 16 — Optional Windows Bridge & Local Presence' not in s:
     errors.append('Stage 16 missing')
 if 'skills:\n  write_approval: true' not in s:
     errors.append('skills.write_approval missing')
 if 'Hindsight Local Embedded' not in s:
     errors.append('Hindsight policy missing')
+if 'Memory Defense' not in s:
+    errors.append('Memory Defense guidance missing')
+if 'state/growth/user-model.md' not in s:
+    errors.append('user model missing')
+if 'state/growth/experience.db' not in s:
+    errors.append('experience DB missing')
+if 'personality-state.yaml' not in s:
+    errors.append('personality state missing')
+if 'world/trust.yaml' not in s:
+    errors.append('trust state missing')
+if 'What Veda still doesn\'t know' not in s:
+    errors.append('unknowns surface missing')
+if 'Explain the last tool call / decision' not in s:
+    errors.append('decision audit missing')
+if '[ ] D1–D18 and D21–D34 executed' not in s:
+    errors.append('Stage 14 checklist stale')
+if '### V4.0 — Adaptive personal-intelligence architecture' not in s:
+    errors.append('V4 changelog missing')
+if 'Guide revision V4' not in s:
+    errors.append('V4 footer/header missing')
 if '**A — V3 baseline**' not in s:
     errors.append('Telegram Profile A baseline missing')
 if 'vedha-game-mode' not in s:
@@ -6666,8 +6686,9 @@ if 'vedha-status' not in s or 'vedha-cost-report' not in s:
     errors.append('observability commands missing')
 if 'docker volume prune -f' not in s:
     errors.append('explicit volume-prune prohibition missing')
-if not re.search(r'^\| D(?:25|26|27|28|29|30) \|', stage14, re.M):
-    errors.append('V3 drills D25-D30 missing')
+for n in (21,22,23,24,25,26,27,28,29,30,31,32,33,34):
+    if not re.search(r'^\| D' + str(n) + r' \|', stage14, re.M):
+        errors.append(f'D{n} missing from Stage 14')
 if errors:
     for e in errors: print('FAIL consistency:', e)
     raise SystemExit(1)
