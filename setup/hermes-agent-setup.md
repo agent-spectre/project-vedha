@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Target host** | Windows 11 · **14th-gen Intel Core i3** (record exact SKU) · **24 GB RAM** · **RTX 3060 12 GB** |
-| **Guide revision** | **V3** — major architecture upgrade adding long-term semantic memory, native learning-journey/session recall, self-model, feedback, goals/world-state, evaluation, change-control, safer remote boundaries, cost observability, gaming mode, red-team drills and optional Windows integration. V2.2 infrastructure is retained. |
+| **Guide revision** | **V4** — adaptive personal-intelligence architecture: long-term semantic memory, a governed user model, experience/outcome learning, dynamic personality state, confidence/evidence tracking, trust levels, interruption rules, session hygiene, memory/skill decay review, proactive goals/world-state, local presence, and controlled self-improvement. V3 infrastructure/security is retained and corrected where stale. |
 | **Release anchor** | Hermes Agent **v0.21.6** — tag `v0.21.6`, published **October 8, 2026**, commit `818c13be1dc4fd28987e1e881a9408224afd4535`. Pin the exact tag+commit; do not install `main`. |
 | **Models** | GLM-5.3-Flash (primary) and DeepSeek V4.1 Flash (delegated), both via OpenRouter, **CoreWeave-only routing**, no model-level fallback. Any future stronger reasoning model is a separate audited architecture change. |
 | **Assistant name / project name** | The assistant is called **Veda**; the project, its folders and scripts are called **Vedha** (`/srv/vedha`, `vedha-*`). |
@@ -16,7 +16,7 @@
 |---|---|
 | Start here | [How to read this guide](#how-to-read-this-guide) · [Before you start: basics for first-time users](#before-you-start-basics-for-first-time-users) · [What you need before Stage 0](#what-you-need-before-stage-0) · [Architecture at a glance](#architecture-at-a-glance) · [Storage layout](#project-vedha-storage-layout-mandatory) |
 | Build | [Stage 0](#stage-0--windows-host-preparation) · [Stage 1](#stage-1--wsl-foundation-storage-root-ops-toolkit--pinned-hermes-install) · [Stage 2](#stage-2--primary-model-complete-coreweave-routing-policy--basic-chat) · [Stage 3](#stage-3--execution-boundary-docker-sandbox-approvals--security-foundation) · [Stage 4](#stage-4--identity-adaptive-memory-engineering-context--persistent-memory) · **[Stage 4.5](#stage-45--long-term-memory-semantic-recall--external-provider)** · [Stage 5](#stage-5--web-research--prompt-injectionexfiltration-hardening) · [Stage 6](#stage-6--skills-mcp--integrations) · [Stage 7](#stage-7--delegated-coding-model-deepseek-v41-flash) |
-| Operate | [Stage 8](#stage-8--automation-cron--background-work) · [Stage 9](#stage-9--telegram-gateway--always-on-operation) · [Stage 10](#stage-10--additional-messaging-platforms-optional) · [Stage 11](#stage-11--reliability-cost-observability--alerting) · [Stage 12](#stage-12--local-voice-pipeline-stt--tts--wake-word--barge-in) · [Stage 13](#stage-13--proactive-jarvis-capabilities--personal-growth) · [Stage 14](#stage-14--failure-mode-drills) · **[Stage 15](#stage-15--growth-layer-self-model-feedback-evaluation--change-control)** · **[Stage 16](#stage-16--optional-windows-bridge--local-presence)** · [Final Stage](#final-stage--end-to-end-validation-backup-restore-drill--update-procedure) |
+| Operate | [Stage 8](#stage-8--automation-cron--background-work) · [Stage 9](#stage-9--telegram-gateway--always-on-operation) · [Stage 10](#stage-10--additional-messaging-platforms-optional) · [Stage 11](#stage-11--reliability-cost-observability--alerting) · [Stage 12](#stage-12--local-voice-pipeline-stt--tts--wake-word--barge-in) · [Stage 13](#stage-13--proactive-jarvis-capabilities--personal-growth) · [Stage 14](#stage-14--failure-mode-drills) · **[Stage 15](#stage-15--adaptive-learning-engine-self-model-user-model-experience-feedback-evaluation--change-control)** · **[Stage 16](#stage-16--optional-windows-bridge--local-presence)** · [Final Stage](#final-stage--end-to-end-validation-backup-restore-drill--update-procedure) |
 | Reference | [A Models](#appendix-a--model--architecture-reference) · [B Do's and Don'ts](#appendix-b--consolidated-dos-and-donts) · [C Troubleshooting](#appendix-c--troubleshooting-reference) · [D Resources](#appendix-d--resources) · [E Upgrades](#appendix-e--future-hardware-upgrade-path) · [F Quick reference](#appendix-f--quick-reference) · [G Bare metal](#appendix-g--bare-metal-linux-alternative-to-stages-01) · [H Cloud voice](#appendix-h--cloud-voice-alternatives-inactive) · [I Security model](#appendix-i--agent-security-model) · [J Ledger](#appendix-j--config-fragments-release-assumption-ledger--audits) · [K Changelog](#appendix-k--changelog-and-validation-record) · [L Resource budget](#appendix-l--resource-budget-24-gb-host-estimates-measure-and-adjust) |
 
 ---
@@ -102,7 +102,7 @@ You don't need Linux experience, but you need these six habits.
 | Auxiliary LLM calls | Every auxiliary route pinned to GLM on CoreWeave **from Stage 2** | Compression, titles, vision, memory rewrite, approvals, etc. |
 | Fallback | None (fail-closed) | Outages are detected and alerted (Stage 11), never silently rerouted |
 | Execution | Docker sandbox, no network by default, workspace bind mount only | Custom Java-capable image (Stage 3) |
-| Memory | Three layers: `USER.md` profile + `MEMORY.md` semantic learning + session history/episodic context | Governed by Stage 4 learning loop; external providers optional |
+| Memory | Hot profile + hot semantic notes + exact episodic history + external semantic/entity memory + structured user model + experience/outcome history | Built-in Hermes memory remains the compact always-on layer; Hindsight is semantic recall; the user model and experience store drive personalization and learning |
 | Remote access | Telegram (primary), others optional | Per-platform tool restrictions |
 | Voice | Local STT (faster-whisper) + local TTS (Kokoro-FastAPI) | Voice mode response style, latency budget |
 | Supervision | systemd user units + linger + WSL keep-alive task | Health timer + Telegram alerting independent of the LLM |
@@ -134,7 +134,7 @@ Each stage adds one capability that you can verify on its own, on top of everyth
 [ ] Stage 12 — Local Voice Pipeline (STT + TTS + Wake Word + Barge-in)
 [ ] Stage 13 — Proactive "Jarvis" Capabilities & Personal Growth
 [ ] Stage 14 — Failure-Mode Drills
-[ ] Stage 15 — Growth Layer, Self-Model, Feedback, Evaluation & Change Control
+[ ] Stage 15 — Adaptive Learning Engine (user model, experience, feedback, personality, trust, evaluation & change control)
 [ ] Stage 16 — Optional Windows Bridge & Local Presence
 [ ] Final    — End-to-End Validation, Backup, Restore Drill & Update Procedure
 ```
@@ -298,7 +298,8 @@ LINUX (inside the VHDX on F:)                        PURPOSE
 ├── cache\uv\                                        uv cache
 ├── state\                                           Health state, endpoint snapshots, heartbeats, config history
 ├── backups\                                         Local encrypted backups
-└── tmp\                                             Vedha temp files (ext4)
+├── tmp\                                             Vedha temp files (ext4)
+└── state\growth\                                   User model, experience, proposals, personality state, goals and metrics
 ```
 
 **Host-integration exceptions** (the OS decides where these live). Their canonical copies are kept under F: or in `ops/`:
@@ -316,6 +317,8 @@ LINUX (inside the VHDX on F:)                        PURPOSE
 > **Opening Vedha files from Windows:** in Explorer use `\\wsl.localhost\Ubuntu\srv\vedha\workspace`. For editing code, use an IDE in WSL mode (e.g. VS Code with the WSL extension) or open that path from your Windows IDE. Run builds and tests inside WSL or the sandbox, not through the `\\wsl.localhost` path from Windows; that crossing is slow. Never edit `$HERMES_HOME/.env` with Windows tools that might sync or index it.
 
 > **Live-state rule:** do not place Hermes state, SQLite databases, runtimes, or the active workspace on `/mnt/f`. Use `/mnt/f` only for explicit Windows-host integration and the encrypted backup mirror described above.
+>
+> **Filesystem write optimization:** the live Vedha filesystem is the ext4 root inside the Ubuntu VHDX, not an `/etc/fstab` mount on DrvFS. Do not blindly add `noatime,nodiratime` to `/etc/fstab` for `/`; standard WSL root mounting is not configured that way. Record the actual root mount options with `findmnt -no SOURCE,FSTYPE,OPTIONS /` and keep coding state on ext4. Any root-mount tuning must be a separate measured WSL architecture change.
 
 ---
 
@@ -410,7 +413,9 @@ processors=6
 swap=8GB
 # Keep swap on F: (double backslashes are required in .wslconfig paths).
 swapFile=F:\\project-vedha\\host\\wsl\\swap.vhdx
-# Default NAT networking is the validated baseline.
+# Default NAT networking is the validated baseline for Vedha.
+# DO NOT enable networkingMode=mirrored for this build: localhost-bound STT/Kokoro
+# behavior and host/VM routing differ under mirrored networking.
 # networkingMode=mirrored
 
 [experimental]
@@ -430,7 +435,11 @@ wsl --shutdown
 1. Download Docker Desktop for Windows from https://www.docker.com/products/docker-desktop/ and run the installer. Keep "Use WSL 2 instead of Hyper-V" checked. Sign-in to a Docker account is optional; you can skip it.
 2. Settings → General: **Use the WSL 2 based engine** ✔, **Start Docker Desktop when you sign in to your computer** ✔.
 3. Settings → Resources → WSL Integration: enable **Ubuntu** → Apply & Restart. (If you moved or imported the distro after first enabling this, toggle it off and on again.)
-4. Settings → Resources → Advanced → **Disk image location** = `F:\project-vedha\DockerDesktopWSL` → Apply. Let Docker move it; never move the disk image by hand.
+4. **Before changing the Docker disk image location, fully stop the stack:** quit Docker Desktop from the system tray, then run 🪟 `wsl --shutdown`. Confirm Docker Desktop is not running in Task Manager.
+5. Settings → Resources → Advanced → **Disk image location** = `F:\project-vedha\DockerDesktopWSL` → Apply. Let Docker perform the move; never move the disk image file by hand.
+6. After the move completes, start Docker Desktop, wait for **Engine running**, then verify `wsl -l -v` and `docker info`.
+
+> **Lock warning:** do not attempt the disk-location migration while Docker Desktop, WSL helper VMs, or containers are active. If Settings reports a locked file, cancel, quit Docker Desktop, run `wsl --shutdown`, wait for Docker/vmmemWSL to exit, then retry. Do not delete Docker Desktop state files manually.
 
 **0.7 — 🪟 Windows GUI: Telegram account hardening (do it now, before you ever need it)**
 Telegram → Settings → Privacy and Security → **Two-Step Verification**: set a cloud password. Your Telegram account becomes a remote control for an agent that can run tools.
@@ -456,6 +465,8 @@ Docker Desktop shows "Engine running".
 - **`wsl --manage … --move` is not recognized** — run `wsl --update`, then retry, or use the export/import fallback in 0.4.
 - **Docker Desktop: "WSL 2 installation is incomplete"** — run `wsl --update` in PowerShell (Administrator) and restart Docker Desktop.
 - **Ubuntu is missing in Docker Desktop → Resources → WSL Integration** — open Ubuntu once, then restart Docker Desktop and reopen that page.
+- **Docker disk-image move reports a lock/file-in-use error** — quit Docker Desktop from the tray, run `wsl --shutdown`, verify Docker/vmmemWSL have exited, then retry.
+- **You experimented with mirrored WSL networking** — restore the documented NAT baseline, redeploy `.wslconfig`, run `wsl --shutdown`, restart Docker Desktop, and re-test STT/Kokoro localhost access.
 
 ### Rollback / recovery
 - Distro move: `wsl --manage Ubuntu --move <old path>` moves it back.
@@ -580,7 +591,7 @@ sudo mkdir -p /srv/vedha
 sudo chown "$USER:$USER" /srv/vedha
 chmod 750 /srv/vedha
 
-mkdir -p /srv/vedha/{hermes,workspace,gateway-cwd,source,runtime,services/stt,models/hf,tools/bin,tools/uv-python,cache/uv,state/config-history,state/endpoints,state/heartbeat,backups,tmp}
+mkdir -p /srv/vedha/{hermes,workspace,gateway-cwd,source,runtime,services/stt,models/hf,tools/bin,tools/uv-python,cache/uv,state/config-history,state/endpoints,state/heartbeat,state/growth,state/growth/proposals,state/growth/metrics,state/growth/persona-snapshots,backups,tmp,logs}
 mkdir -p /srv/vedha/ops/{bin,lib,config/fragments,persona,skills,systemd,compose,sandbox,docs,logrotate,backup}
 
 cat > /srv/vedha/vedha-env.sh <<'VEDHA_EOF'
@@ -2103,7 +2114,7 @@ vedha-config-apply 40-memory.yaml && vedha-keycheck
 ```bash
 cat > /srv/vedha/ops/docs/ENVIRONMENT.md <<'VEDHA_EOF'
 # Veda environment (reference for humans; not injected into prompts)
-- Host: Windows 11, 14th-gen Intel Core i3 ([record exact SKU]), 24 GB RAM, RTX 3060 12 GB 6 GB.
+- Host: Windows 11, 14th-gen Intel Core i3 ([record exact SKU]), 24 GB RAM, RTX 3060 12 GB.
 - WSL2 Ubuntu (VHDX on F:\project-vedha\wsl\Ubuntu); Vedha root /srv/vedha; Docker Desktop (disk on F:).
 - LLMs: GLM-5.3-Flash (primary) and DeepSeek V4.1 Flash (delegated) via OpenRouter, CoreWeave only.
 - Voice: local faster-whisper STT service (127.0.0.1:8765), Kokoro-FastAPI TTS (127.0.0.1:8880).
