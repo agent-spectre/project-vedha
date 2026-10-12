@@ -3638,7 +3638,11 @@ set -euo pipefail
 echo "== OpenRouter key usage =="
 or_api -fsS https://openrouter.ai/api/v1/key |
   jq -r '.data | {usage, usage_daily, usage_weekly, usage_monthly, limit, limit_remaining}'
-echo "Use OpenRouter Activity for model/provider/cost attribution."
+echo "Use OpenRouter Activity for exact model/provider/cost attribution."
+echo
+echo "Capability attribution is based on the active session/job label where available:"
+echo "  chat | research | coding | memory | voice | automation | background-review"
+echo "If the installed provider/API does not expose capability fields, remain aggregate-only rather than estimating."
 VEDHA_EOF
 chmod 755 /srv/vedha/ops/bin/vedha-cost-report
 vedha-cost-report
